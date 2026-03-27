@@ -2428,6 +2428,7 @@ local Library do
             HasSubtabs = Data.Subtabs or Data.subtabs or false,
 
             Active = false,
+            SubPages = { },
             ColumnsData = { },
             Elements = { }
         }
@@ -2938,18 +2939,18 @@ local Library do
         end
 
         Items["Inactive"]:Connect("MouseButton1Down", function()
-            for Index, Value in SubPage.Window.SubPages do
+            for Index, Value in SubPage.Page.SubPages do
                 Value:Turn(Value == SubPage)
             end
         end)
 
-        if #SubPage.Window.SubPages == 0 then 
+        if #SubPage.Page.SubPages == 0 then 
             SubPage:Turn(true)
         end
 
         SubPage.Elements = Items
 
-        TableInsert(SubPage.Window.SubPages, SubPage)
+        TableInsert(SubPage.Page.SubPages, SubPage)
         return setmetatable(SubPage, Library.Pages)
     end
 
