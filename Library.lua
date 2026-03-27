@@ -2761,9 +2761,11 @@ local Library do
                     Position = UDim2New(0, 6, 0.5, 0),
                     Size = UDim2New(0, 16, 0, 16),
                     BorderSizePixel = 0,
-                    Visible = Data.Icon ~= nil and Data.icon ~= nil,
+                    Visible = Data.Icon ~= nil or Data.icon ~= nil,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Icon"]:AddToTheme({ImageColor3 = "Text"})
+
+                local IconOffset = (Data.Icon ~= nil or Data.icon ~= nil) and -10 or 0
 
                 Items["Label"] = Instances:Create("TextLabel", {
                     Parent = Items["Inactive"].Instance,
@@ -2775,7 +2777,7 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 0.5),
                     Text = SubPage.Name,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    Position = UDim2New(0.5, IconOffset, 0.5, 0),
                     Size = UDim2New(1, -12, 1, 0),
                     BorderSizePixel = 0,
                     TextSize = 12,
