@@ -1,4 +1,5 @@
 --[[
+    Made by samet
 
     Assign different flags to each element to prevent from configs overriding eachother
     Example script is at the bottom
@@ -993,6 +994,10 @@ local Library do
 
         function Watermark:SetVisibility(Bool)
             Items["Watermark"].Instance.Visible = Bool
+        end
+
+        function Watermark:SetText(Text)
+            Items["Title"].Instance.Text = Text
         end
         
         return Watermark
