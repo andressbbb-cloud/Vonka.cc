@@ -449,6 +449,10 @@ local Library do
                 return
             end
 
+            if not Library then
+                return
+            end
+
             Library:ChangeItemTheme(self, Properties)
         end
 
@@ -716,7 +720,9 @@ local Library do
 
     Library.Unload = function(self)
         for Index, Value in self.Connections do 
-            Value.Connection:Disconnect()
+            if Value.Connection then
+                Value.Connection:Disconnect()
+            end
         end
 
         for Index, Value in self.Threads do 
@@ -763,12 +769,8 @@ local Library do
             Event = Event,
             Callback = Callback,
             Name = Name,
-            Connection = nil
+            Connection = Event:Connect(Callback)
         }
-
-        Library:Thread(function()
-            NewConnection.Connection = Event:Connect(Callback)
-        end)
 
         TableInsert(self.Connections, NewConnection)
         return NewConnection
