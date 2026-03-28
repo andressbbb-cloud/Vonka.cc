@@ -2482,7 +2482,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Name = "\0",
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://" .. Page.Icon,
+                    Image = Page.Icon:find("rbxasset") and Page.Icon or "rbxassetid://" .. Page.Icon,
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
                     Size = UDim2New(0, Page.Name and 14 or 18, 0, Page.Name and 14 or 18),
