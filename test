@@ -2470,6 +2470,7 @@ local Library do
                 BorderSizePixel = 0,
                 BorderColor3 = FromRGB(0, 0, 0),
                 TextSize = 12,
+                Visible = Page.Name ~= nil,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
@@ -2480,11 +2481,11 @@ local Library do
                     ImageTransparency = 0.48,
                     BorderColor3 = FromRGB(0, 0, 0),
                     Name = "\0",
-                    AnchorPoint = Vector2New(0, 0.5),
+                    AnchorPoint = Vector2New(0.5, 0.5),
                     Image = "rbxassetid://" .. Page.Icon,
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, Page.Name and 4 or 0, 0.5, 0),
-                    Size = UDim2New(0, Page.Name and 14 or 20, 0, Page.Name and 14 or 20),
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    Size = UDim2New(0, Page.Name and 14 or 18, 0, Page.Name and 14 or 18),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })  Items["Icon"]:AddToTheme({ImageColor3 = "Text"})
