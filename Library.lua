@@ -449,6 +449,10 @@ local Library do
                 return
             end
 
+            if not Library then
+                return
+            end
+
             Library:ChangeItemTheme(self, Properties)
         end
 
@@ -698,10 +702,30 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
+        local TargetTransparency = Visibility and OldTransparency or 1
+        
+        if Speed == 0 then
+            Item[Property] = TargetTransparency
+            if not Visibility then 
+                Item[Property] = OldTransparency 
+                -- Actually, if it's hidden, the parent goes Visible = false. 
+                -- We should leave it at TargetTransparency (1) so it's ready, but original does:
+                -- if not Visibility then task.wait() Item[Property] = OldTransparency end
+            end
+            
+            local dummySignal = {
+                Connect = function(_, cb)
+                    task.spawn(cb)
+                    return {Disconnect = function() end}
+                end
+            }
+            return {Tween = {Completed = dummySignal}}
+        end
+
         Item[Property] = Visibility and 1 or OldTransparency
 
         local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction), {
-            [Property] = Visibility and OldTransparency or 1
+            [Property] = TargetTransparency
         }, true)
 
         Library:Connect(NewTween.Tween.Completed, function()
@@ -716,7 +740,9 @@ local Library do
 
     Library.Unload = function(self)
         for Index, Value in self.Connections do 
-            Value.Connection:Disconnect()
+            if Value.Connection then
+                Value.Connection:Disconnect()
+            end
         end
 
         for Index, Value in self.Threads do 
@@ -763,12 +789,8 @@ local Library do
             Event = Event,
             Callback = Callback,
             Name = Name,
-            Connection = nil
+            Connection = Event:Connect(Callback)
         }
-
-        Library:Thread(function()
-            NewConnection.Connection = Event:Connect(Callback)
-        end)
 
         TableInsert(self.Connections, NewConnection)
         return NewConnection
@@ -2422,7 +2444,8 @@ local Library do
         local Page = {
             Window = self,
 
-            Name = Data.Name or Data.name or "Page",
+            Name = Data.Name or Data.name or nil,
+            Icon = Data.Icon or Data.icon or nil,
             Columns = Data.Columns or Data.columns or 2,
 
             HasSubtabs = Data.Subtabs or Data.subtabs or false,
@@ -2461,16 +2484,34 @@ local Library do
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(215, 215, 215),
                 TextTransparency = 0.47999998927116394,
-                Text = Page.Name,
+                Text = Page.Name or "",
                 Name = "\0",
                 Size = UDim2New(1, 0, 1, 0),
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 0, 0, -1),
+                Position = UDim2New(0, Page.Icon and 18 or 0, 0, -1),
                 BorderSizePixel = 0,
                 BorderColor3 = FromRGB(0, 0, 0),
                 TextSize = 12,
+                Visible = Page.Name ~= nil,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if Page.Icon then
+                Items["Icon"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Inactive"].Instance,
+                    ScaleType = Enum.ScaleType.Fit,
+                    ImageTransparency = 0.48,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = Page.Icon:find("rbxasset") and Page.Icon or "rbxassetid://" .. Page.Icon,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    Size = UDim2New(0, Page.Name and 14 or 18, 0, Page.Name and 14 or 18),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  Items["Icon"]:AddToTheme({ImageColor3 = "Text"})
+            end
             
             Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
@@ -2623,13 +2664,21 @@ local Library do
 
                 Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
                 Items["Hide"].Instance.Visible = true
-
                 Items["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
+
+                if Items["Icon"] then
+                    Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
+                    Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
+                end
             else
                 Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
                 Items["Hide"].Instance.Visible = false
-
                 Items["Text"]:ChangeItemTheme({TextColor3 = "Text"})
+
+                if Items["Icon"] then
+                    Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.48})
+                    Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
+                end
             end
 
             local Descendants = Items["Page"].Instance:GetDescendants()
