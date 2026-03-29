@@ -702,30 +702,10 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
-        local TargetTransparency = Visibility and OldTransparency or 1
-        
-        if Speed == 0 then
-            Item[Property] = TargetTransparency
-            if not Visibility then 
-                Item[Property] = OldTransparency 
-                -- Actually, if it's hidden, the parent goes Visible = false. 
-                -- We should leave it at TargetTransparency (1) so it's ready, but original does:
-                -- if not Visibility then task.wait() Item[Property] = OldTransparency end
-            end
-            
-            local dummySignal = {
-                Connect = function(_, cb)
-                    task.spawn(cb)
-                    return {Disconnect = function() end}
-                end
-            }
-            return {Tween = {Completed = dummySignal}}
-        end
-
         Item[Property] = Visibility and 1 or OldTransparency
 
         local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction), {
-            [Property] = TargetTransparency
+            [Property] = Visibility and OldTransparency or 1
         }, true)
 
         Library:Connect(NewTween.Tween.Completed, function()
