@@ -2664,6 +2664,13 @@ local Library do
             local Descendants = Items["Page"].Instance:GetDescendants()
             TableInsert(Descendants, Items["Page"].Instance)
 
+            local FadeSpeed = Page.Window.FadeSpeed or 0.5
+            if FadeSpeed == 0 then
+                Debounce = false
+                Items["Page"].Instance.Visible = Bool
+                return
+            end
+
             local NewTween
             for Index, Value in Descendants do 
                 local ValueIndex = Library:GetTransparencyPropertyFromItem(Value)
@@ -2674,10 +2681,10 @@ local Library do
 
                 if type(ValueIndex) == "table" then
                     for _, Property in ValueIndex do 
-                        NewTween = Library:FadeItem(Value, Property, Bool, Page.Window.FadeSpeed or 0.5)
+                        NewTween = Library:FadeItem(Value, Property, Bool, FadeSpeed)
                     end
                 else
-                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, Page.Window.FadeSpeed or 0.5)
+                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, FadeSpeed)
                 end
             end
 
@@ -2944,6 +2951,13 @@ local Library do
             local Descendants = Items["Subtab"].Instance:GetDescendants()
             TableInsert(Descendants, Items["Subtab"].Instance)
 
+            local FadeSpeed = SubPage.Window.FadeSpeed or 0.5
+            if FadeSpeed == 0 then
+                Debounce = false
+                Items["Subtab"].Instance.Visible = Bool
+                return
+            end
+
             local NewTween
             for Index, Value in Descendants do 
                 local ValueIndex = Library:GetTransparencyPropertyFromItem(Value)
@@ -2954,10 +2968,10 @@ local Library do
 
                 if type(ValueIndex) == "table" then
                     for _, Property in ValueIndex do 
-                        NewTween = Library:FadeItem(Value, Property, Bool, SubPage.Window.FadeSpeed or 0.5)
+                        NewTween = Library:FadeItem(Value, Property, Bool, FadeSpeed)
                     end
                 else
-                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, SubPage.Window.FadeSpeed or 0.5)
+                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, FadeSpeed)
                 end
             end
 
