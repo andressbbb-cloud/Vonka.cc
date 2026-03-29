@@ -984,6 +984,12 @@ local Library do
         function Watermark:SetVisibility(Bool)
             Items["Watermark"].Instance.Visible = Bool
         end
+
+        function Watermark:SetText(String)
+            if Items["Title"] and Items["Title"].Instance then
+                Items["Title"].Instance.Text = String
+            end
+        end
         
         return Watermark
     end
