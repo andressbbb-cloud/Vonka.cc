@@ -2644,34 +2644,36 @@ local Library do
             end
 
             Page.Active = Bool
-
             Debounce = true 
 
             if Bool then 
                 Items["Page"].Instance.Position = UDim2New(0, 0, 0, 0)
-
-                Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                
+                Items["Text"].Instance.TextColor3 = Library.Theme.Accent
+                Items["Text"].Instance.TextTransparency = 0
                 Items["Hide"].Instance.Visible = true
                 Items["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
 
                 if Items["Icon"] then
-                    Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
+                    Items["Icon"].Instance.ImageColor3 = Library.Theme.Accent
+                    Items["Icon"].Instance.ImageTransparency = 0
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
                 end
             else
                 Items["Page"].Instance.Position = UDim2New(9999, 0, 9999, 0)
 
-                Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
+                Items["Text"].Instance.TextColor3 = Library.Theme.Text
+                Items["Text"].Instance.TextTransparency = 0.5
                 Items["Hide"].Instance.Visible = false
                 Items["Text"]:ChangeItemTheme({TextColor3 = "Text"})
 
                 if Items["Icon"] then
-                    Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.48})
+                    Items["Icon"].Instance.ImageColor3 = Library.Theme.Text
+                    Items["Icon"].Instance.ImageTransparency = 0.48
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
                 end
             end
 
-            -- Completely bypass TweenService fading for performance
             Debounce = false
         end
 
@@ -2901,19 +2903,20 @@ local Library do
             end
 
             SubPage.Active = Bool
-
             Debounce = true 
 
             if Bool then 
                 Items["Subtab"].Instance.Position = UDim2New(0, 0, 0, 0)
 
-                Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
+                Items["Icon"].Instance.ImageColor3 = Library.Theme.Accent
+                Items["Icon"].Instance.ImageTransparency = 0
                 Items["Hide"].Instance.Visible = true
 
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
 
                 if Items["Label"] then
-                    Items["Label"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                    Items["Label"].Instance.TextColor3 = Library.Theme.Accent
+                    Items["Label"].Instance.TextTransparency = 0
                     Items["Label"]:ChangeItemTheme({TextColor3 = "Accent"})
                 end
 
@@ -2921,20 +2924,21 @@ local Library do
             else
                 Items["Subtab"].Instance.Position = UDim2New(9999, 0, 9999, 0)
                 
-                Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.35})
+                Items["Icon"].Instance.ImageColor3 = Library.Theme.Text
+                Items["Icon"].Instance.ImageTransparency = 0.35
                 Items["Hide"].Instance.Visible = false
 
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
 
                 if Items["Label"] then
-                    Items["Label"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.35})
+                    Items["Label"].Instance.TextColor3 = Library.Theme.Text
+                    Items["Label"].Instance.TextTransparency = 0.35
                     Items["Label"]:ChangeItemTheme({TextColor3 = "Text"})
                 end
 
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, -2)
             end
 
-            -- Completely bypass TweenService fading for performance
             Debounce = false
         end
 
@@ -3259,24 +3263,22 @@ local Library do
                 end
 
                 NewSection.Active = Bool
-
                 Debounce = true 
 
                 if Bool then 
                     SubItems["Content"].Instance.Position = UDim2New(0, 0, 0, 0)
 
-                    SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
-
+                    SubItems["Text"].Instance.TextColor3 = Library.Theme.Accent
+                    SubItems["Text"].Instance.TextTransparency = 0
                     SubItems["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
                 else
                     SubItems["Content"].Instance.Position = UDim2New(9999, 0, 9999, 0)
                     
-                    SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
-
+                    SubItems["Text"].Instance.TextColor3 = Library.Theme.Text
+                    SubItems["Text"].Instance.TextTransparency = 0.5
                     SubItems["Text"]:ChangeItemTheme({TextColor3 = "Text"})
                 end
 
-                -- Completely bypass TweenService fading for performance
                 Debounce = false
             end
 
