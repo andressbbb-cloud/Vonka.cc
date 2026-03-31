@@ -2384,24 +2384,7 @@ local Library do
             Debounce = true 
 
             Items["MainFrame"].Instance.Visible = Bool
-
-            -- Instantly set state instead of fading children
-            for Index, Value in Items["MainFrame"].Instance:GetDescendants() do 
-                local ValueIndex = Library:GetTransparencyPropertyFromItem(Value)
-
-                if not ValueIndex then 
-                    continue
-                end
-
-                if type(ValueIndex) == "table" then
-                    for _, Property in ValueIndex do 
-                        Value[Property] = Bool and 0 or 1
-                    end
-                else
-                    Value[ValueIndex] = Bool and 0 or 1
-                end
-            end
-
+            
             Debounce = false
         end
 
