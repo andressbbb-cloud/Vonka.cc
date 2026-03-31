@@ -1587,7 +1587,6 @@ local Library do
             end
 
             Colorpicker.IsOpen = Bool
-
             Debounce = true 
 
             if Bool then 
@@ -1602,6 +1601,13 @@ local Library do
 
                 if not Library.CurrentColorpicker then 
                     Library.CurrentColorpicker = Colorpicker
+                end
+                
+                -- Force ZIndex on children to ensure they show up over the UI
+                for Index, Value in Items["ColorpickerWindow"].Instance:GetDescendants() do
+                    if not StringFind(Value.ClassName, "UI") then 
+                        Value.ZIndex = 10002
+                    end
                 end
             else
                 Items["ColorpickerWindow"].Instance.Visible = false
@@ -4296,7 +4302,6 @@ local Library do
             end
 
             Dropdown.IsOpen = Bool
-
             Debounce = true 
 
             if Bool then 
@@ -4304,6 +4309,13 @@ local Library do
                 Items["OptionHolder"].Instance.ZIndex = 15
                 Items["Open"].Instance.Text = "-"
                 Items["Open"].Instance.Position = UDim2New(0, -5, 0, -1)
+                
+                -- Force ZIndex on children to ensure they show up over the UI
+                for Index, Value in Items["OptionHolder"].Instance:GetDescendants() do
+                    if not StringFind(Value.ClassName, "UI") then 
+                        Value.ZIndex = 16
+                    end
+                end
             else
                 Items["OptionHolder"].Instance.Visible = false
                 Items["Open"].Instance.Text = "+"
