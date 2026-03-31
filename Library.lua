@@ -209,7 +209,7 @@ local Library do
         MenuKeybind = Enum.KeyCode.Z, 
 
         Tween = {
-            Time = 0.3,
+            Time = 0,
             Style = Enum.EasingStyle.Exponential,
             Direction = Enum.EasingDirection.Out
         },
@@ -2381,18 +2381,12 @@ local Library do
             end
 
             Window.IsOpen = Bool
-
             Debounce = true 
 
-            if Bool then 
-                Items["MainFrame"].Instance.Visible = true
-            end
+            Items["MainFrame"].Instance.Visible = Bool
 
-            local Descendants = Items["MainFrame"].Instance:GetDescendants()
-            TableInsert(Descendants, Items["MainFrame"].Instance)
-
-            local NewTween
-            for Index, Value in Descendants do 
+            -- Instantly set state instead of fading children
+            for Index, Value in Items["MainFrame"].Instance:GetDescendants() do 
                 local ValueIndex = Library:GetTransparencyPropertyFromItem(Value)
 
                 if not ValueIndex then 
@@ -2401,17 +2395,14 @@ local Library do
 
                 if type(ValueIndex) == "table" then
                     for _, Property in ValueIndex do 
-                        NewTween = Library:FadeItem(Value, Property, Bool, Window.FadeSpeed)
+                        Value[Property] = Bool and 0 or 1
                     end
                 else
-                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, Window.FadeSpeed)
+                    Value[ValueIndex] = Bool and 0 or 1
                 end
             end
 
-            Library:Connect(NewTween.Tween.Completed, function()
-                Debounce = false
-                Items["MainFrame"].Instance.Visible = Bool
-            end)
+            Debounce = false
         end
 
         Library:Connect(UserInputService.InputBegan, function(Input)
