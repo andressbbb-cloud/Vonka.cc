@@ -1603,10 +1603,22 @@ local Library do
                     Library.CurrentColorpicker = Colorpicker
                 end
                 
-                -- Force ZIndex on children to ensure they show up over the UI
+                -- Force ZIndex and Transparency on children to ensure they show up over the UI
                 for Index, Value in Items["ColorpickerWindow"].Instance:GetDescendants() do
                     if not StringFind(Value.ClassName, "UI") then 
                         Value.ZIndex = 10002
+                        
+                        -- Fix Transparency state since FadeItem was stripped
+                        local prop = Library:GetTransparencyPropertyFromItem(Value)
+                        if prop then
+                            if type(prop) == "table" then
+                                for _, p in pairs(prop) do
+                                    Value[p] = 0
+                                end
+                            else
+                                Value[prop] = 0
+                            end
+                        end
                     end
                 end
             else
@@ -4310,10 +4322,22 @@ local Library do
                 Items["Open"].Instance.Text = "-"
                 Items["Open"].Instance.Position = UDim2New(0, -5, 0, -1)
                 
-                -- Force ZIndex on children to ensure they show up over the UI
+                -- Force ZIndex and Transparency on children to ensure they show up over the UI
                 for Index, Value in Items["OptionHolder"].Instance:GetDescendants() do
                     if not StringFind(Value.ClassName, "UI") then 
                         Value.ZIndex = 16
+                        
+                        -- Fix Transparency state since FadeItem was stripped
+                        local prop = Library:GetTransparencyPropertyFromItem(Value)
+                        if prop then
+                            if type(prop) == "table" then
+                                for _, p in pairs(prop) do
+                                    Value[p] = 0
+                                end
+                            else
+                                Value[prop] = 0
+                            end
+                        end
                     end
                 end
             else
