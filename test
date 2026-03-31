@@ -2555,7 +2555,8 @@ local Library do
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255),
-                Visible = false
+                Position = UDim2New(9999, 0, 9999, 0),
+                Visible = true
             })
             
             if not Page.HasSubtabs then 
@@ -2647,7 +2648,7 @@ local Library do
             Debounce = true 
 
             if Bool then 
-                Items["Page"].Instance.Visible = true
+                Items["Page"].Instance.Position = UDim2New(0, 0, 0, 0)
 
                 Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
                 Items["Hide"].Instance.Visible = true
@@ -2658,6 +2659,8 @@ local Library do
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
                 end
             else
+                Items["Page"].Instance.Position = UDim2New(9999, 0, 9999, 0)
+
                 Items["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
                 Items["Hide"].Instance.Visible = false
                 Items["Text"]:ChangeItemTheme({TextColor3 = "Text"})
@@ -2670,7 +2673,6 @@ local Library do
 
             -- Completely bypass TweenService fading for performance
             Debounce = false
-            Items["Page"].Instance.Visible = Bool
         end
 
         Items["Inactive"]:Connect("MouseButton1Down", function()
@@ -2829,7 +2831,9 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                BackgroundColor3 = FromRGB(255, 255, 255)
+                BackgroundColor3 = FromRGB(255, 255, 255),
+                Position = UDim2New(9999, 0, 9999, 0),
+                Visible = true
             }) 
 
             Instances:Create("UIPadding", {
@@ -2901,7 +2905,7 @@ local Library do
             Debounce = true 
 
             if Bool then 
-                Items["Subtab"].Instance.Visible = true
+                Items["Subtab"].Instance.Position = UDim2New(0, 0, 0, 0)
 
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
                 Items["Hide"].Instance.Visible = true
@@ -2909,12 +2913,14 @@ local Library do
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
 
                 if Items["Label"] then
-                    Items["Label"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                    Items["Label"]:`(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
                     Items["Label"]:ChangeItemTheme({TextColor3 = "Accent"})
                 end
 
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, 1)
             else
+                Items["Subtab"].Instance.Position = UDim2New(9999, 0, 9999, 0)
+                
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.35})
                 Items["Hide"].Instance.Visible = false
 
@@ -2930,7 +2936,6 @@ local Library do
 
             -- Completely bypass TweenService fading for performance
             Debounce = false
-            Items["Subtab"].Instance.Visible = Bool
         end
 
         Items["Inactive"]:Connect("MouseButton1Down", function()
@@ -3234,7 +3239,8 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 0, 1, 0),
                     BorderSizePixel = 0,
-                    Visible = false,
+                    Position = UDim2New(9999, 0, 9999, 0),
+                    Visible = true,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 }) 
                 
@@ -3257,12 +3263,14 @@ local Library do
                 Debounce = true 
 
                 if Bool then 
-                    SubItems["Content"].Instance.Visible = true
+                    SubItems["Content"].Instance.Position = UDim2New(0, 0, 0, 0)
 
                     SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
 
                     SubItems["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
                 else
+                    SubItems["Content"].Instance.Position = UDim2New(9999, 0, 9999, 0)
+                    
                     SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
 
                     SubItems["Text"]:ChangeItemTheme({TextColor3 = "Text"})
@@ -3270,7 +3278,6 @@ local Library do
 
                 -- Completely bypass TweenService fading for performance
                 Debounce = false
-                SubItems["Content"].Instance.Visible = Bool
             end
 
             SubItems["Inactive"]:Connect("MouseButton1Down", function()
