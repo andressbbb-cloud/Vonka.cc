@@ -1747,6 +1747,7 @@ local Library do
         end
 
         Items["ColorpickerButton"]:Connect("MouseButton1Down", function()
+            print("[Debug] ColorpickerButton was physically clicked!")
             Colorpicker:SetOpen(not Colorpicker.IsOpen)
         end)
 
