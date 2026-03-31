@@ -141,8 +141,8 @@
 
 local LoadingTick = os.clock()
 
-if getgenv().Library then 
-    getgenv().Library:Unload()
+if getgenv().Library and type(getgenv().Library) == "table" and type(getgenv().Library.Unload) == "function" then 
+    pcall(function() getgenv().Library:Unload() end)
 end
 
 local Library do
@@ -2913,7 +2913,7 @@ local Library do
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
 
                 if Items["Label"] then
-                    Items["Label"]:`(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                    Items["Label"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
                     Items["Label"]:ChangeItemTheme({TextColor3 = "Accent"})
                 end
 
