@@ -473,17 +473,9 @@ local Library do
                 return
             end
 
-            -- Entirely bypass tweens internally in the library for maximum performance
-            for prop, val in pairs(Goal) do
-                self.Instance[prop] = val
-            end
-
-            return {
-                Tween = { Completed = { Connect = function() end } },
-                Info = Info,
-                Goal = Goal,
-                Item = self.Instance
-            }
+            -- Instead of completely breaking the Tween engine (which breaks Dropdowns/Colorpickers waiting for .Completed),
+            -- We run an incredibly fast tween (0.01s) so the engine fires all its signals properly without causing frame drops!
+            return Tween:Create(self, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), Goal)
         end
 
         Instances.Disconnect = function(self, Name)
@@ -712,11 +704,21 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
-        Item[Property] = Visibility and OldTransparency or 1
+        Item[Property] = Visibility and 1 or OldTransparency
 
-        return {
-            Tween = { Completed = { Connect = function(self, callback) if callback then callback() end end } }
-        }
+        -- Using ultra-fast tween so all connections fire safely without layout lags
+        local NewTween = Tween:Create(Item, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
+            [Property] = Visibility and OldTransparency or 1
+        }, true)
+
+        Library:Connect(NewTween.Tween.Completed, function()
+            if not Visibility then 
+                task.wait()
+                Item[Property] = OldTransparency
+            end
+        end)
+
+        return NewTween
     end
 
     Library.Unload = function(self)
