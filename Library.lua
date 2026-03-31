@@ -473,7 +473,17 @@ local Library do
                 return
             end
 
-            return Tween:Create(self, Info, Goal)
+            -- Entirely bypass tweens internally in the library for maximum performance
+            for prop, val in pairs(Goal) do
+                self.Instance[prop] = val
+            end
+
+            return {
+                Tween = { Completed = { Connect = function() end } },
+                Info = Info,
+                Goal = Goal,
+                Item = self.Instance
+            }
         end
 
         Instances.Disconnect = function(self, Name)
@@ -702,20 +712,11 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
-        Item[Property] = Visibility and 1 or OldTransparency
+        Item[Property] = Visibility and OldTransparency or 1
 
-        local NewTween = Tween:Create(Item, TweenInfo.new(Speed or Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction), {
-            [Property] = Visibility and OldTransparency or 1
-        }, true)
-
-        Library:Connect(NewTween.Tween.Completed, function()
-            if not Visibility then 
-                task.wait()
-                Item[Property] = OldTransparency
-            end
-        end)
-
-        return NewTween
+        return {
+            Tween = { Completed = { Connect = function(self, callback) if callback then callback() end end } }
+        }
     end
 
     Library.Unload = function(self)
