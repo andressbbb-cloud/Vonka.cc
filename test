@@ -473,17 +473,9 @@ local Library do
                 return
             end
 
-            -- Entirely bypass tweens internally in the library for maximum performance
-            for prop, val in pairs(Goal) do
-                self.Instance[prop] = val
-            end
-
-            return {
-                Tween = { Completed = { Connect = function() end } },
-                Info = Info,
-                Goal = Goal,
-                Item = self.Instance
-            }
+            -- Instead of completely breaking the Tween engine (which breaks Dropdowns/Colorpickers waiting for .Completed),
+            -- We run an incredibly fast tween (0.01s) so the engine fires all its signals properly without causing frame drops!
+            return Tween:Create(self, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), Goal)
         end
 
         Instances.Disconnect = function(self, Name)
@@ -712,11 +704,21 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
-        Item[Property] = Visibility and OldTransparency or 1
+        Item[Property] = Visibility and 1 or OldTransparency
 
-        return {
-            Tween = { Completed = { Connect = function(self, callback) if callback then callback() end end } }
-        }
+        -- Using ultra-fast tween so all connections fire safely without layout lags
+        local NewTween = Tween:Create(Item, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
+            [Property] = Visibility and OldTransparency or 1
+        }, true)
+
+        Library:Connect(NewTween.Tween.Completed, function()
+            if not Visibility then 
+                task.wait()
+                Item[Property] = OldTransparency
+            end
+        end)
+
+        return NewTween
     end
 
     Library.Unload = function(self)
@@ -1582,20 +1584,25 @@ local Library do
         local Debounce = false
 
         function Colorpicker:SetOpen(Bool)
+            print("[Debug] Colorpicker:SetOpen called. State requested:", Bool)
+            
             if Debounce then 
+                print("[Debug] Colorpicker debounce active, returning.")
                 return 
             end
 
             Colorpicker.IsOpen = Bool
-
             Debounce = true 
 
             if Bool then 
+                print("[Debug] Opening Colorpicker. Current Position:", Items["ColorpickerWindow"].Instance.Position)
                 Items["ColorpickerWindow"].Instance.Visible = true
                 Items["ColorpickerWindow"].Instance.ZIndex = 10001
                 Items["ColorpickerWindow"].Instance.Position = UDim2New(0, Data.Parent.Instance.AbsolutePosition.X, 0, Data.Parent.Instance.AbsolutePosition.Y + 15)
+                print("[Debug] New Position Set:", Items["ColorpickerWindow"].Instance.Position)
 
                 if Library.CurrentColorpicker then
+                    print("[Debug] Closing previously open Colorpicker")
                     Library.CurrentColorpicker:SetOpen(false)
                     Library.CurrentColorpicker = nil 
                 end
@@ -1603,7 +1610,23 @@ local Library do
                 if not Library.CurrentColorpicker then 
                     Library.CurrentColorpicker = Colorpicker
                 end
+                
+                local descendantCount = 0
+                -- Force ZIndex and properly restore ONLY the original visibility/transparency
+                for Index, Value in Items["ColorpickerWindow"].Instance:GetDescendants() do
+                    descendantCount = descendantCount + 1
+                    if not StringFind(Value.ClassName, "UI") then 
+                        Value.ZIndex = 10002
+                        
+                        -- Set items visible because fading logic previously hid them internally
+                        if Value:IsA("GuiObject") then
+                            Value.Visible = true
+                        end
+                    end
+                end
+                print("[Debug] Successfully updated properties for", descendantCount, "descendants.")
             else
+                print("[Debug] Closing Colorpicker")
                 Items["ColorpickerWindow"].Instance.Visible = false
                 Library.CurrentColorpicker = nil
             end
@@ -1726,6 +1749,7 @@ local Library do
         end
 
         Items["ColorpickerButton"]:Connect("MouseButton1Down", function()
+            print("[Debug] ColorpickerButton was physically clicked!")
             Colorpicker:SetOpen(not Colorpicker.IsOpen)
         end)
 
@@ -1786,11 +1810,13 @@ local Library do
 
         Library:Connect(UserInputService.InputBegan, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) then
+                if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) or Library:IsMouseOverFrame(Items["ColorpickerButton"]) then
                     return
                 end
 
-                Colorpicker:SetOpen(false)
+                if Colorpicker.IsOpen then
+                    Colorpicker:SetOpen(false)
+                end
             end
         end)
 
@@ -4291,20 +4317,46 @@ local Library do
         local Debounce = false
 
         function Dropdown:SetOpen(Bool)
+            print("[Debug] Dropdown:SetOpen called. State requested:", Bool)
+            
             if Debounce then 
+                print("[Debug] Dropdown debounce active, returning.")
                 return 
             end
 
             Dropdown.IsOpen = Bool
-
             Debounce = true 
 
             if Bool then 
+                print("[Debug] Opening Dropdown")
                 Items["OptionHolder"].Instance.Visible = true
                 Items["OptionHolder"].Instance.ZIndex = 15
                 Items["Open"].Instance.Text = "-"
                 Items["Open"].Instance.Position = UDim2New(0, -5, 0, -1)
+                
+                local descendantCount = 0
+                -- Force ZIndex and Transparency on children to ensure they show up over the UI
+                for Index, Value in Items["OptionHolder"].Instance:GetDescendants() do
+                    descendantCount = descendantCount + 1
+                    if not StringFind(Value.ClassName, "UI") then 
+                        Value.ZIndex = 16
+                        
+                        -- Fix Transparency state since FadeItem was stripped
+                        local prop = Library:GetTransparencyPropertyFromItem(Value)
+                        if prop then
+                            if type(prop) == "table" then
+                                for _, p in pairs(prop) do
+                                    Value[p] = 0
+                                end
+                            else
+                                Value[prop] = 0
+                            end
+                        end
+                    end
+                end
+                print("[Debug] Successfully updated properties for", descendantCount, "descendants.")
             else
+                print("[Debug] Closing Dropdown")
                 Items["OptionHolder"].Instance.Visible = false
                 Items["Open"].Instance.Text = "+"
                 Items["Open"].Instance.Position = UDim2New(0, -4, 0, -1)
