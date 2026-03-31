@@ -2647,6 +2647,7 @@ local Library do
             Debounce = true 
 
             if Bool then 
+                Items["Page"].Instance.Visible = true
                 Items["Page"].Instance.Position = UDim2New(0, 0, 0, 0)
                 
                 Items["Text"].Instance.TextColor3 = Library.Theme.Accent
@@ -2660,6 +2661,7 @@ local Library do
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
                 end
             else
+                Items["Page"].Instance.Visible = false
                 Items["Page"].Instance.Position = UDim2New(9999, 0, 9999, 0)
 
                 Items["Text"].Instance.TextColor3 = Library.Theme.Text
@@ -2906,6 +2908,7 @@ local Library do
             Debounce = true 
 
             if Bool then 
+                Items["Subtab"].Instance.Visible = true
                 Items["Subtab"].Instance.Position = UDim2New(0, 0, 0, 0)
 
                 Items["Icon"].Instance.ImageColor3 = Library.Theme.Accent
@@ -2922,6 +2925,7 @@ local Library do
 
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, 1)
             else
+                Items["Subtab"].Instance.Visible = false
                 Items["Subtab"].Instance.Position = UDim2New(9999, 0, 9999, 0)
                 
                 Items["Icon"].Instance.ImageColor3 = Library.Theme.Text
@@ -3266,12 +3270,14 @@ local Library do
                 Debounce = true 
 
                 if Bool then 
+                    SubItems["Content"].Instance.Visible = true
                     SubItems["Content"].Instance.Position = UDim2New(0, 0, 0, 0)
 
                     SubItems["Text"].Instance.TextColor3 = Library.Theme.Accent
                     SubItems["Text"].Instance.TextTransparency = 0
                     SubItems["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
                 else
+                    SubItems["Content"].Instance.Visible = false
                     SubItems["Content"].Instance.Position = UDim2New(9999, 0, 9999, 0)
                     
                     SubItems["Text"].Instance.TextColor3 = Library.Theme.Text
