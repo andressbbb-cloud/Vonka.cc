@@ -1592,6 +1592,7 @@ local Library do
 
             if Bool then 
                 Items["ColorpickerWindow"].Instance.Visible = true
+                Items["ColorpickerWindow"].Instance.ZIndex = 10001
                 Items["ColorpickerWindow"].Instance.Position = UDim2New(0, Data.Parent.Instance.AbsolutePosition.X, 0, Data.Parent.Instance.AbsolutePosition.Y + 15)
 
                 if Library.CurrentColorpicker then
