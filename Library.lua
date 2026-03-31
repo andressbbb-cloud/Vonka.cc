@@ -1603,21 +1603,17 @@ local Library do
                     Library.CurrentColorpicker = Colorpicker
                 end
                 
-                -- Force ZIndex and Transparency on children to ensure they show up over the UI
+                -- Force ZIndex and properly restore ONLY the original visibility/transparency
                 for Index, Value in Items["ColorpickerWindow"].Instance:GetDescendants() do
                     if not StringFind(Value.ClassName, "UI") then 
                         Value.ZIndex = 10002
                         
-                        -- Fix Transparency state since FadeItem was stripped
-                        local prop = Library:GetTransparencyPropertyFromItem(Value)
-                        if prop then
-                            if type(prop) == "table" then
-                                for _, p in pairs(prop) do
-                                    Value[p] = 0
-                                end
-                            else
-                                Value[prop] = 0
-                            end
+                        -- Set items visible because fading logic previously hid them internally
+                        if Value:IsA("GuiObject") then
+                            Value.Visible = true
+                            
+                            -- We don't overwrite transparency here anymore to prevent breaking Gradients/Checks
+                            -- Just let the library's initial properties handle it!
                         end
                     end
                 end
