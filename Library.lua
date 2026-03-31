@@ -1810,11 +1810,13 @@ local Library do
 
         Library:Connect(UserInputService.InputBegan, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) then
+                if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) or Library:IsMouseOverFrame(Items["ColorpickerButton"]) then
                     return
                 end
 
-                Colorpicker:SetOpen(false)
+                if Colorpicker.IsOpen then
+                    Colorpicker:SetOpen(false)
+                end
             end
         end)
 
