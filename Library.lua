@@ -1584,10 +1584,7 @@ local Library do
         local Debounce = false
 
         function Colorpicker:SetOpen(Bool)
-            print("[Debug] Colorpicker:SetOpen called. State requested:", Bool)
-            
             if Debounce then 
-                print("[Debug] Colorpicker debounce active, returning.")
                 return 
             end
 
@@ -1595,14 +1592,11 @@ local Library do
             Debounce = true 
 
             if Bool then 
-                print("[Debug] Opening Colorpicker. Current Position:", Items["ColorpickerWindow"].Instance.Position)
                 Items["ColorpickerWindow"].Instance.Visible = true
                 Items["ColorpickerWindow"].Instance.ZIndex = 10001
                 Items["ColorpickerWindow"].Instance.Position = UDim2New(0, Data.Parent.Instance.AbsolutePosition.X, 0, Data.Parent.Instance.AbsolutePosition.Y + 15)
-                print("[Debug] New Position Set:", Items["ColorpickerWindow"].Instance.Position)
 
                 if Library.CurrentColorpicker then
-                    print("[Debug] Closing previously open Colorpicker")
                     Library.CurrentColorpicker:SetOpen(false)
                     Library.CurrentColorpicker = nil 
                 end
@@ -1611,10 +1605,8 @@ local Library do
                     Library.CurrentColorpicker = Colorpicker
                 end
                 
-                local descendantCount = 0
                 -- Force ZIndex and properly restore ONLY the original visibility/transparency
                 for Index, Value in Items["ColorpickerWindow"].Instance:GetDescendants() do
-                    descendantCount = descendantCount + 1
                     if not StringFind(Value.ClassName, "UI") then 
                         Value.ZIndex = 10002
                         
@@ -1624,9 +1616,7 @@ local Library do
                         end
                     end
                 end
-                print("[Debug] Successfully updated properties for", descendantCount, "descendants.")
             else
-                print("[Debug] Closing Colorpicker")
                 Items["ColorpickerWindow"].Instance.Visible = false
                 Library.CurrentColorpicker = nil
             end
@@ -1749,7 +1739,6 @@ local Library do
         end
 
         Items["ColorpickerButton"]:Connect("MouseButton1Down", function()
-            print("[Debug] ColorpickerButton was physically clicked!")
             Colorpicker:SetOpen(not Colorpicker.IsOpen)
         end)
 
@@ -4317,10 +4306,7 @@ local Library do
         local Debounce = false
 
         function Dropdown:SetOpen(Bool)
-            print("[Debug] Dropdown:SetOpen called. State requested:", Bool)
-            
             if Debounce then 
-                print("[Debug] Dropdown debounce active, returning.")
                 return 
             end
 
@@ -4328,16 +4314,13 @@ local Library do
             Debounce = true 
 
             if Bool then 
-                print("[Debug] Opening Dropdown")
                 Items["OptionHolder"].Instance.Visible = true
                 Items["OptionHolder"].Instance.ZIndex = 15
                 Items["Open"].Instance.Text = "-"
                 Items["Open"].Instance.Position = UDim2New(0, -5, 0, -1)
                 
-                local descendantCount = 0
                 -- Force ZIndex and Transparency on children to ensure they show up over the UI
                 for Index, Value in Items["OptionHolder"].Instance:GetDescendants() do
-                    descendantCount = descendantCount + 1
                     if not StringFind(Value.ClassName, "UI") then 
                         Value.ZIndex = 16
                         
@@ -4354,9 +4337,7 @@ local Library do
                         end
                     end
                 end
-                print("[Debug] Successfully updated properties for", descendantCount, "descendants.")
             else
-                print("[Debug] Closing Dropdown")
                 Items["OptionHolder"].Instance.Visible = false
                 Items["Open"].Instance.Text = "+"
                 Items["Open"].Instance.Position = UDim2New(0, -4, 0, -1)
