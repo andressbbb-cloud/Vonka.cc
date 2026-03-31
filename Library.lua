@@ -4329,10 +4329,19 @@ local Library do
                         if prop then
                             if type(prop) == "table" then
                                 for _, p in pairs(prop) do
-                                    Value[p] = 0
+                                    -- Keep BackgroundTransparency at 1 for OptionButtons and OptionTexts to avoid white background
+                                    if p == "BackgroundTransparency" and (Value.ClassName == "TextButton" or Value.ClassName == "TextLabel") then
+                                        Value[p] = 1
+                                    else
+                                        Value[p] = 0
+                                    end
                                 end
                             else
-                                Value[prop] = 0
+                                if prop == "BackgroundTransparency" and (Value.ClassName == "TextButton" or Value.ClassName == "TextLabel") then
+                                    Value[prop] = 1
+                                else
+                                    Value[prop] = 0
+                                end
                             end
                         end
                     end
