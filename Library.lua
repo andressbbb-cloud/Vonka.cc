@@ -489,6 +489,7 @@ local Library do
             local Dragging = false 
             local DragStart
             local StartPosition 
+            local DragConnection
 
             local Set = function(Input)
                 local DragDelta = Input.Position - DragStart
@@ -501,19 +502,30 @@ local Library do
 
                     DragStart = Input.Position
                     StartPosition = Gui.Position
+
+                    if DragConnection then
+                        DragConnection:Disconnect()
+                    end
+
+                    DragConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if not Dragging then
+                            return
+                        end
+
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement or ChangedInput.UserInputType == Enum.UserInputType.Touch then
+                            Set(ChangedInput)
+                        end
+                    end)
                 end
             end)
 
             self:Connect("InputEnded", function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = false
-                end
-            end)
 
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Dragging then
-                        Set(Input)
+                    if DragConnection then
+                        DragConnection:Disconnect()
+                        DragConnection = nil
                     end
                 end
             end)
@@ -532,6 +544,7 @@ local Library do
             local Start = UDim2New()
             local Delta = UDim2New()
             local ResizeMax = Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
+            local ResizeConnection
 
             local ResizeButton = Instances:Create("TextButton", {
 				Parent = Gui,
@@ -552,23 +565,32 @@ local Library do
                     Resizing = true
 
                     Start = Gui.Size - UDim2New(0, Input.Position.X, 0, Input.Position.Y)
+
+                    if ResizeConnection then
+                        ResizeConnection:Disconnect()
+                    end
+
+                    ResizeConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement and Resizing then
+                            ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
+
+                            Delta = Start + UDim2New(0, ChangedInput.Position.X, 0, ChangedInput.Position.Y)
+                            Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
+
+                            Gui.Size = Delta
+                        end
+                    end)
                 end
             end)
 
             ResizeButton:Connect("InputEnded", function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Resizing = false
-                end
-            end)
 
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement and Resizing then
-					ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
-
-					Delta = Start + UDim2New(0, Input.Position.X, 0, Input.Position.Y)
-					Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
-
-					Gui.Size = Delta
+                    if ResizeConnection then
+                        ResizeConnection:Disconnect()
+                        ResizeConnection = nil
+                    end
                 end
             end)
 
@@ -1557,6 +1579,7 @@ local Library do
         local SlidingPalette = false
         local SlidingHue = false
         local SlidingAlpha = false
+        local SlideConnection = nil
 
         local Debounce = false
 
@@ -1723,12 +1746,34 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingPalette = true
                 Colorpicker:SlidePalette(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Palette"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingPalette = false
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    SlideConnection:Disconnect()
+                    SlideConnection = nil
+                end
             end
         end)
 
@@ -1736,12 +1781,34 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingHue = true
                 Colorpicker:SlideHue(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Hue"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingHue = false
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    SlideConnection:Disconnect()
+                    SlideConnection = nil
+                end
             end
         end)
 
@@ -1749,27 +1816,33 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingAlpha = true
                 Colorpicker:SlideAlpha(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Alpha"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingAlpha = false
-            end
-        end)
-
-        Library:Connect(UserInputService.InputChanged, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseMovement then
-                if SlidingPalette then
-                    Colorpicker:SlidePalette(Input)
-                end
-
-                if SlidingHue then
-                    Colorpicker:SlideHue(Input)
-                end
-
-                if SlidingAlpha then
-                    Colorpicker:SlideAlpha(Input)
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    SlideConnection:Disconnect()
+                    SlideConnection = nil
                 end
             end
         end)
@@ -3895,22 +3968,28 @@ local Library do
             local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
 
             Slider:Set(Value)
+            
+            if Slider.SlideConnection then
+                Slider.SlideConnection:Disconnect()
+            end
+
+            Slider.SlideConnection = Library:Connect(UserInputService.InputChanged, function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseMovement and Slider.Sliding then
+                    local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+                    local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
+
+                    Slider:Set(Value)
+                end
+            end)
         end)
 
         Items["RealSlider"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 Slider.Sliding = false
-            end
-        end)
-
-        Library:Connect(UserInputService.InputChanged, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseMovement and Slider.Sliding then
-                local MousePos = UserInputService:GetMouseLocation()
-
-                local SizeX = (MousePos.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
-                local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
-
-                Slider:Set(Value)
+                if Slider.SlideConnection then
+                    Slider.SlideConnection:Disconnect()
+                    Slider.SlideConnection = nil
+                end
             end
         end)
 
