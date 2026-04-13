@@ -504,7 +504,11 @@ local Library do
                     StartPosition = Gui.Position
 
                     if DragConnection then
-                        DragConnection:Disconnect()
+                        if DragConnection.Connection then
+                            DragConnection.Connection:Disconnect()
+                        elseif DragConnection.Disconnect then
+                            DragConnection:Disconnect()
+                        end
                     end
 
                     DragConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
@@ -524,7 +528,11 @@ local Library do
                     Dragging = false
 
                     if DragConnection then
-                        DragConnection:Disconnect()
+                        if DragConnection.Connection then
+                            DragConnection.Connection:Disconnect()
+                        elseif DragConnection.Disconnect then
+                            DragConnection:Disconnect()
+                        end
                         DragConnection = nil
                     end
                 end
@@ -567,7 +575,11 @@ local Library do
                     Start = Gui.Size - UDim2New(0, Input.Position.X, 0, Input.Position.Y)
 
                     if ResizeConnection then
-                        ResizeConnection:Disconnect()
+                        if ResizeConnection.Connection then
+                            ResizeConnection.Connection:Disconnect()
+                        elseif ResizeConnection.Disconnect then
+                            ResizeConnection:Disconnect()
+                        end
                     end
 
                     ResizeConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
@@ -588,7 +600,11 @@ local Library do
                     Resizing = false
 
                     if ResizeConnection then
-                        ResizeConnection:Disconnect()
+                        if ResizeConnection.Connection then
+                            ResizeConnection.Connection:Disconnect()
+                        elseif ResizeConnection.Disconnect then
+                            ResizeConnection:Disconnect()
+                        end
                         ResizeConnection = nil
                     end
                 end
@@ -1771,7 +1787,11 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingPalette = false
                 if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
-                    SlideConnection:Disconnect()
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
                     SlideConnection = nil
                 end
             end
@@ -1806,7 +1826,11 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingHue = false
                 if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
-                    SlideConnection:Disconnect()
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
                     SlideConnection = nil
                 end
             end
@@ -1841,7 +1865,11 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingAlpha = false
                 if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
-                    SlideConnection:Disconnect()
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
                     SlideConnection = nil
                 end
             end
@@ -3970,7 +3998,11 @@ local Library do
             Slider:Set(Value)
             
             if Slider.SlideConnection then
-                Slider.SlideConnection:Disconnect()
+                if Slider.SlideConnection.Connection then
+                    Slider.SlideConnection.Connection:Disconnect()
+                elseif Slider.SlideConnection.Disconnect then
+                    Slider.SlideConnection:Disconnect()
+                end
             end
 
             Slider.SlideConnection = Library:Connect(UserInputService.InputChanged, function(Input)
@@ -3987,7 +4019,11 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 Slider.Sliding = false
                 if Slider.SlideConnection then
-                    Slider.SlideConnection:Disconnect()
+                    if Slider.SlideConnection.Connection then
+                        Slider.SlideConnection.Connection:Disconnect()
+                    elseif Slider.SlideConnection.Disconnect then
+                        Slider.SlideConnection:Disconnect()
+                    end
                     Slider.SlideConnection = nil
                 end
             end
