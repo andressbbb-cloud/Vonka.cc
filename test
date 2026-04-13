@@ -349,16 +349,18 @@ local Library do
 
         Tween.Create = function(self, Item, Info, Goal, IsRawItem)
             Item = IsRawItem and Item or Item.Instance
-            Info = Info or TweenInfo.new(Library.Tween.Time, Library.Tween.Style, Library.Tween.Direction)
+
+            -- Direct property set (no TweenService overhead)
+            for Property, Value in Goal do
+                Item[Property] = Value
+            end
 
             local NewTween = {
-                Tween = TweenService:Create(Item, Info, Goal),
+                Tween = nil,
                 Info = Info,
                 Goal = Goal,
                 Item = Item
             }
-
-            NewTween.Tween:Play()
 
             setmetatable(NewTween, Tween)
 
@@ -366,35 +368,16 @@ local Library do
         end
 
         Tween.Get = function(self)
-            if not self.Tween then 
-                return
-            end
-
             return self.Tween, self.Info, self.Goal
         end
 
         Tween.Pause = function(self)
-            if not self.Tween then 
-                return
-            end
-
-            self.Tween:Pause()
         end
 
         Tween.Play = function(self)
-            if not self.Tween then 
-                return
-            end
-
-            self.Tween:Play()
         end
 
         Tween.Clean = function(self)
-            if not self.Tween then 
-                return
-            end
-
-            Tween:Pause()
             self = nil
         end
     end
@@ -473,9 +456,10 @@ local Library do
                 return
             end
 
-            -- Instead of completely breaking the Tween engine (which breaks Dropdowns/Colorpickers waiting for .Completed),
-            -- We run an incredibly fast tween (0.01s) so the engine fires all its signals properly without causing frame drops!
-            return Tween:Create(self, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), Goal)
+            -- Direct property set (zero overhead, no TweenService)
+            for Property, Value in Goal do
+                self.Instance[Property] = Value
+            end
         end
 
         Instances.Disconnect = function(self, Name)
@@ -505,6 +489,7 @@ local Library do
             local Dragging = false 
             local DragStart
             local StartPosition 
+            local DragConnection
 
             local Set = function(Input)
                 local DragDelta = Input.Position - DragStart
@@ -517,19 +502,30 @@ local Library do
 
                     DragStart = Input.Position
                     StartPosition = Gui.Position
+
+                    if DragConnection then
+                        DragConnection:Disconnect()
+                    end
+
+                    DragConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if not Dragging then
+                            return
+                        end
+
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement or ChangedInput.UserInputType == Enum.UserInputType.Touch then
+                            Set(ChangedInput)
+                        end
+                    end)
                 end
             end)
 
             self:Connect("InputEnded", function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = false
-                end
-            end)
 
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Dragging then
-                        Set(Input)
+                    if DragConnection then
+                        DragConnection:Disconnect()
+                        DragConnection = nil
                     end
                 end
             end)
@@ -584,7 +580,7 @@ local Library do
 					Delta = Start + UDim2New(0, Input.Position.X, 0, Input.Position.Y)
 					Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
 
-					Tween:Create(Gui, TweenInfo.new(0.17, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Delta}, true)
+					Gui.Size = Delta
                 end
             end)
 
@@ -704,21 +700,14 @@ local Library do
 
     Library.FadeItem = function(self, Item, Property, Visibility, Speed)
         local OldTransparency = Item[Property]
-        Item[Property] = Visibility and 1 or OldTransparency
-
-        -- Using ultra-fast tween so all connections fire safely without layout lags
-        local NewTween = Tween:Create(Item, TweenInfo.new(0.01, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {
-            [Property] = Visibility and OldTransparency or 1
-        }, true)
-
-        Library:Connect(NewTween.Tween.Completed, function()
-            if not Visibility then 
-                task.wait()
+        if Visibility then
+            Item[Property] = OldTransparency
+        else
+            Item[Property] = 1
+            task.defer(function()
                 Item[Property] = OldTransparency
-            end
-        end)
-
-        return NewTween
+            end)
+        end
     end
 
     Library.Unload = function(self)
