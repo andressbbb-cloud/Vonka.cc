@@ -504,7 +504,11 @@ local Library do
                     StartPosition = Gui.Position
 
                     if DragConnection then
-                        DragConnection:Disconnect()
+                        if DragConnection.Connection then
+                            DragConnection.Connection:Disconnect()
+                        elseif DragConnection.Disconnect then
+                            DragConnection:Disconnect()
+                        end
                     end
 
                     DragConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
@@ -524,7 +528,11 @@ local Library do
                     Dragging = false
 
                     if DragConnection then
-                        DragConnection:Disconnect()
+                        if DragConnection.Connection then
+                            DragConnection.Connection:Disconnect()
+                        elseif DragConnection.Disconnect then
+                            DragConnection:Disconnect()
+                        end
                         DragConnection = nil
                     end
                 end
@@ -544,6 +552,7 @@ local Library do
             local Start = UDim2New()
             local Delta = UDim2New()
             local ResizeMax = Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
+            local ResizeConnection
 
             local ResizeButton = Instances:Create("TextButton", {
 				Parent = Gui,
@@ -564,23 +573,40 @@ local Library do
                     Resizing = true
 
                     Start = Gui.Size - UDim2New(0, Input.Position.X, 0, Input.Position.Y)
+
+                    if ResizeConnection then
+                        if ResizeConnection.Connection then
+                            ResizeConnection.Connection:Disconnect()
+                        elseif ResizeConnection.Disconnect then
+                            ResizeConnection:Disconnect()
+                        end
+                    end
+
+                    ResizeConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement and Resizing then
+                            ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
+
+                            Delta = Start + UDim2New(0, ChangedInput.Position.X, 0, ChangedInput.Position.Y)
+                            Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
+
+                            Gui.Size = Delta
+                        end
+                    end)
                 end
             end)
 
             ResizeButton:Connect("InputEnded", function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Resizing = false
-                end
-            end)
 
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement and Resizing then
-					ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
-
-					Delta = Start + UDim2New(0, Input.Position.X, 0, Input.Position.Y)
-					Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
-
-					Gui.Size = Delta
+                    if ResizeConnection then
+                        if ResizeConnection.Connection then
+                            ResizeConnection.Connection:Disconnect()
+                        elseif ResizeConnection.Disconnect then
+                            ResizeConnection:Disconnect()
+                        end
+                        ResizeConnection = nil
+                    end
                 end
             end)
 
@@ -667,6 +693,149 @@ local Library do
         Padding = UDimNew(0, 10)
     }) 
 
+    do
+        local Tooltip = { Visible = false, Text = "" }
+        Library.Tooltip = Tooltip
+
+        local Items = { }
+        Items["Root"] = Instances:Create("Frame", {
+            Parent = Library.Holder.Instance,
+            Name = "\0",
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Visible = false,
+            ZIndex = 999,
+            Size = UDim2New(0, 0, 0, 0),
+            Position = UDim2New(0, 0, 0, 0)
+        })
+
+        Items["Body"] = Instances:Create("Frame", {
+            Parent = Items["Root"].Instance,
+            Name = "\0",
+            AutomaticSize = Enum.AutomaticSize.XY,
+            BorderColor3 = FromRGB(10, 10, 10),
+            BorderSizePixel = 2,
+            BackgroundColor3 = FromRGB(15, 15, 20),
+            ZIndex = 999
+        })  Items["Body"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+        Instances:Create("UIStroke", {
+            Parent = Items["Body"].Instance,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            LineJoinMode = Enum.LineJoinMode.Miter,
+            Name = "\0",
+            Color = FromRGB(27, 27, 32)
+        }):AddToTheme({Color = "Outline"})
+
+        Instances:Create("UIPadding", {
+            Parent = Items["Body"].Instance,
+            PaddingTop = UDimNew(0, 4),
+            PaddingBottom = UDimNew(0, 4),
+            PaddingLeft = UDimNew(0, 6),
+            PaddingRight = UDimNew(0, 6)
+        })
+
+        Items["Text"] = Instances:Create("TextLabel", {
+            Parent = Items["Body"].Instance,
+            Name = "\0",
+            AutomaticSize = Enum.AutomaticSize.XY,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            FontFace = Library.Font,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Top,
+            TextWrapped = true,
+            TextColor3 = FromRGB(215, 215, 215),
+            Text = "",
+            ZIndex = 999
+        })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+        Instances:Create("UIStroke", {
+            Parent = Items["Text"].Instance,
+            LineJoinMode = Enum.LineJoinMode.Miter,
+            Name = "\0"
+        }):AddToTheme({Color = "Text Border"})
+
+        Library.TooltipItems = Items
+
+        local function UpdateTooltipPosition()
+            if not Tooltip.Visible then
+                return
+            end
+
+            local Root = Items["Root"].Instance
+            local Body = Items["Body"].Instance
+
+            local viewport = Camera.ViewportSize
+            local mx, my = Mouse.X, Mouse.Y
+            local pad = 14
+
+            Root.Position = UDim2New(0, mx + pad, 0, my + pad)
+            task.defer(function()
+                if not Tooltip.Visible then
+                    return
+                end
+                local size = Body.AbsoluteSize
+                local x = mx + pad
+                local y = my + pad
+                if x + size.X > viewport.X - 4 then
+                    x = mx - size.X - pad
+                end
+                if y + size.Y > viewport.Y - 4 then
+                    y = my - size.Y - pad
+                end
+                Root.Position = UDim2New(0, x, 0, y)
+            end)
+        end
+
+        Library:Connect(UserInputService.InputChanged, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                UpdateTooltipPosition()
+            end
+        end, "Tooltip_Follow")
+
+        function Library:ShowTooltip(Text)
+            Text = tostring(Text or "")
+            if Text == "" then
+                return self:HideTooltip()
+            end
+
+            Tooltip.Visible = true
+            Tooltip.Text = Text
+            Items["Text"].Instance.Text = Text
+            Items["Root"].Instance.Visible = true
+            UpdateTooltipPosition()
+        end
+
+        function Library:HideTooltip()
+            Tooltip.Visible = false
+            Tooltip.Text = ""
+            Items["Root"].Instance.Visible = false
+        end
+
+        function Library:BindTooltip(GuiObject, Text)
+            if not GuiObject or type(Text) ~= "string" or Text == "" then
+                return
+            end
+
+            local entering = false
+            self:Connect(GuiObject.MouseEnter, function()
+                entering = true
+                task.delay(0.2, function()
+                    if entering then
+                        Library:ShowTooltip(Text)
+                    end
+                end)
+            end)
+
+            self:Connect(GuiObject.MouseLeave, function()
+                entering = false
+                Library:HideTooltip()
+            end)
+        end
+    end
+
     Library.GetImage = function(self, Image)
         local ImageData = self.Images[Image]
 
@@ -675,6 +844,13 @@ local Library do
         end
 
         return getcustomasset(self.Folders.Assets .. "/" .. ImageData[1])
+    end
+
+    Library.GetTooltip = function(self, Data)
+        if type(Data) ~= "table" then
+            return nil
+        end
+        return Data.Tooltip or Data.tooltip or Data.Tip or Data.tip or Data.Description or Data.description
     end
 
     Library.Round = function(self, Number, Float)
@@ -800,6 +976,18 @@ local Library do
         self.ThemeMap[Item] = ThemeData
     end
 
+    local function NormalizeConfigName(Name)
+        Name = tostring(Name or "default")
+        if not Name:lower():match("%.json$") then
+            Name ..= ".json"
+        end
+        return Name
+    end
+
+    local function GetConfigPath(Name)
+        return Library.Folders.Configs .. "/" .. NormalizeConfigName(Name)
+    end
+
     Library.GetConfig = function(self)
         local Config = { } 
 
@@ -844,18 +1032,131 @@ local Library do
         end
     end
 
-    Library.DeleteConfig = function(self, Config)
-        if isfile(Library.Folders.Configs .. "/" .. Config) then 
-            delfile(Library.Folders.Configs .. "/" .. Config)
-            Library:Notification("Deleted config " .. Config .. ".json", 5, Color3.fromRGB(0, 255, 0))
+    Library.ExportConfig = function(self)
+        return self:GetConfig()
+    end
+
+    Library.ImportConfig = function(self, ConfigString)
+        return self:LoadConfig(ConfigString)
+    end
+
+    Library.CopyConfigToClipboard = function(self)
+        if type(setclipboard) ~= "function" then
+            Library:Notification("Clipboard not supported in this executor", 5, Color3.fromRGB(255, 0, 0))
+            return
         end
+
+        setclipboard(self:GetConfig())
+        Library:Notification("Copied config to clipboard", 5, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.LoadConfigFromFile = function(self, Name)
+        local Path = GetConfigPath(Name)
+        if not isfile(Path) then
+            Library:Notification("Config not found: " .. NormalizeConfigName(Name), 5, Color3.fromRGB(255, 0, 0))
+            return
+        end
+
+        self:LoadConfig(readfile(Path))
+    end
+
+    Library.DeleteConfig = function(self, Config)
+        local Path = GetConfigPath(Config)
+        if not isfile(Path) then
+            Library:Notification("Config not found: " .. NormalizeConfigName(Config), 5, Color3.fromRGB(255, 0, 0))
+            return
+        end
+
+        delfile(Path)
+        Library:Notification("Deleted config " .. NormalizeConfigName(Config), 5, Color3.fromRGB(0, 255, 0))
     end
 
     Library.SaveConfig = function(self, Config)
-        if isfile(Library.Folders.Directory .. "/" .. Library.Folders.Configs .. "/" .. Config .. ".json") then
-            writefile(Library.Folders.Directory .. "/" .. Library.Folders.Configs .. "/" .. Config .. ".json", Library:GetConfig())
-            Library:Notification("Saved config " .. Config .. ".json", 5, Color3.fromRGB(0, 255, 0))
+        local Path = GetConfigPath(Config)
+        writefile(Path, Library:GetConfig())
+        Library:Notification("Saved config " .. NormalizeConfigName(Config), 5, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.ThemePresets = Library.ThemePresets or {
+        Default = {
+            ["Background"] = FromRGB(15, 15, 20),
+            ["Inline"] = FromRGB(20, 20, 25),
+            ["Page Background"] = FromRGB(30, 30, 35),
+            ["Border"] = FromRGB(10, 10, 10),
+            ["Outline"] = FromRGB(27, 27, 32),
+            ["Accent"] = FromRGB(255, 0, 0),
+            ["Element"] = FromRGB(33, 33, 36),
+            ["Hovered Element"] = FromRGB(40, 40, 43),
+            ["Text"] = FromRGB(215, 215, 215),
+            ["Text Border"] = FromRGB(0, 0, 0)
+        },
+        Light = {
+            ["Background"] = FromRGB(235, 235, 240),
+            ["Inline"] = FromRGB(220, 220, 225),
+            ["Page Background"] = FromRGB(210, 210, 215),
+            ["Border"] = FromRGB(140, 140, 150),
+            ["Outline"] = FromRGB(180, 180, 190),
+            ["Accent"] = FromRGB(0, 120, 255),
+            ["Element"] = FromRGB(240, 240, 245),
+            ["Hovered Element"] = FromRGB(230, 230, 235),
+            ["Text"] = FromRGB(25, 25, 25),
+            ["Text Border"] = FromRGB(255, 255, 255)
+        },
+        Midnight = {
+            ["Background"] = FromRGB(10, 10, 14),
+            ["Inline"] = FromRGB(14, 14, 18),
+            ["Page Background"] = FromRGB(18, 18, 24),
+            ["Border"] = FromRGB(0, 0, 0),
+            ["Outline"] = FromRGB(30, 30, 40),
+            ["Accent"] = FromRGB(255, 90, 140),
+            ["Element"] = FromRGB(22, 22, 28),
+            ["Hovered Element"] = FromRGB(30, 30, 36),
+            ["Text"] = FromRGB(235, 235, 235),
+            ["Text Border"] = FromRGB(0, 0, 0)
+        }
+    }
+
+    Library.ApplyThemePreset = function(self, PresetName)
+        local Preset = self.ThemePresets[PresetName]
+        if not Preset then
+            Library:Notification("Unknown theme preset: " .. tostring(PresetName), 5, Color3.fromRGB(255, 0, 0))
+            return
         end
+
+        for Key, Color in Preset do
+            self:ChangeTheme(Key, Color)
+        end
+
+        Library:Notification("Applied theme preset: " .. tostring(PresetName), 3, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.RainbowAccent = Library.RainbowAccent or { Enabled = false, Speed = 0.25 }
+    Library.SetRainbowAccent = function(self, Enabled, Speed)
+        self.RainbowAccent.Enabled = not not Enabled
+        if type(Speed) == "number" and Speed > 0 then
+            self.RainbowAccent.Speed = Speed
+        end
+
+        if not self.RainbowAccent.Enabled then
+            return
+        end
+
+        if self.RainbowAccent._thread then
+            return
+        end
+
+        self.RainbowAccent._thread = self:Thread(function()
+            local t0 = os.clock()
+            while Library and Library.RainbowAccent and Library.RainbowAccent.Enabled do
+                local t = os.clock() - t0
+                local h = (t * (Library.RainbowAccent.Speed or 0.25)) % 1
+                Library:ChangeTheme("Accent", FromHSV(h, 0.9, 1))
+                task.wait(0.03)
+            end
+            if Library and Library.RainbowAccent then
+                Library.RainbowAccent._thread = nil
+            end
+        end)
     end
 
     Library.RefreshConfigsList = function(self, Element)
@@ -900,6 +1201,71 @@ local Library do
 
         return MousePosition.X >= Frame.AbsolutePosition.X and MousePosition.X <= Frame.AbsolutePosition.X + Frame.AbsoluteSize.X 
         and MousePosition.Y >= Frame.AbsolutePosition.Y and MousePosition.Y <= Frame.AbsolutePosition.Y + Frame.AbsoluteSize.Y
+    end
+
+    Library.GetActivePage = function(self)
+        for _, Page in self.Pages do
+            if Page.Active then
+                return Page
+            end
+        end
+    end
+
+    Library.GetActiveColumns = function(self, Page)
+        if not Page then
+            return
+        end
+
+        if Page.HasSubtabs then
+            for _, Sub in Page.SubPages do
+                if Sub.Active then
+                    return Sub.ColumnsData
+                end
+            end
+            return
+        end
+
+        return Page.ColumnsData
+    end
+
+    Library.FilterActivePage = function(self, Query)
+        Query = tostring(Query or "")
+        Query = Query:lower():gsub("^%s+", ""):gsub("%s+$", "")
+
+        local Page = self:GetActivePage()
+        local Columns = self:GetActiveColumns(Page)
+        if not Columns then
+            return
+        end
+
+        for _, Column in Columns do
+            local ColumnInstance = Column.Instance or Column
+            for _, Child in ColumnInstance:GetChildren() do
+                if Child:IsA("Frame") then
+                    if Query == "" then
+                        Child.Visible = true
+                    else
+                        local Match = false
+                        for _, Desc in Child:GetDescendants() do
+                            if Desc:IsA("TextLabel") or Desc:IsA("TextButton") then
+                                local t = tostring(Desc.Text or ""):lower()
+                                if t:find(Query, 1, true) then
+                                    Match = true
+                                    break
+                                end
+                            elseif Desc:IsA("TextBox") then
+                                local t = tostring(Desc.PlaceholderText or ""):lower()
+                                if t:find(Query, 1, true) then
+                                    Match = true
+                                    break
+                                end
+                            end
+                        end
+                        Child.Visible = Match
+                    end
+                end
+            end
+        end
     end
 
     Library.Watermark = function(self, Name)
@@ -1569,6 +1935,7 @@ local Library do
         local SlidingPalette = false
         local SlidingHue = false
         local SlidingAlpha = false
+        local SlideConnection = nil
 
         local Debounce = false
 
@@ -1735,12 +2102,38 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingPalette = true
                 Colorpicker:SlidePalette(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Palette"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingPalette = false
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
+                    SlideConnection = nil
+                end
             end
         end)
 
@@ -1748,12 +2141,38 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingHue = true
                 Colorpicker:SlideHue(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Hue"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingHue = false
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
+                    SlideConnection = nil
+                end
             end
         end)
 
@@ -1761,27 +2180,37 @@ local Library do
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingAlpha = true
                 Colorpicker:SlideAlpha(Input)
+
+                if not SlideConnection then
+                    SlideConnection = Library:Connect(UserInputService.InputChanged, function(ChangedInput)
+                        if ChangedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                            if SlidingPalette then
+                                Colorpicker:SlidePalette(ChangedInput)
+                            end
+
+                            if SlidingHue then
+                                Colorpicker:SlideHue(ChangedInput)
+                            end
+
+                            if SlidingAlpha then
+                                Colorpicker:SlideAlpha(ChangedInput)
+                            end
+                        end
+                    end)
+                end
             end
         end)
 
         Items["Alpha"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 SlidingAlpha = false
-            end
-        end)
-
-        Library:Connect(UserInputService.InputChanged, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseMovement then
-                if SlidingPalette then
-                    Colorpicker:SlidePalette(Input)
-                end
-
-                if SlidingHue then
-                    Colorpicker:SlideHue(Input)
-                end
-
-                if SlidingAlpha then
-                    Colorpicker:SlideAlpha(Input)
+                if not SlidingPalette and not SlidingHue and not SlidingAlpha and SlideConnection then
+                    if SlideConnection.Connection then
+                        SlideConnection.Connection:Disconnect()
+                    elseif SlideConnection.Disconnect then
+                        SlideConnection:Disconnect()
+                    end
+                    SlideConnection = nil
                 end
             end
         end)
@@ -2324,6 +2753,56 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })
+
+            Items["SearchContainer"] = Instances:Create("Frame", {
+                Parent = Items["Inline"].Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2New(1, 0),
+                Position = UDim2New(1, -7, 0, 7),
+                Size = UDim2New(0, 140, 0, 19),
+                BorderSizePixel = 0,
+                Visible = false
+            })
+
+            Items["SearchBox"] = Instances:Create("Frame", {
+                Parent = Items["SearchContainer"].Instance,
+                Name = "\0",
+                BorderColor3 = FromRGB(10, 10, 10),
+                BorderSizePixel = 2,
+                Size = UDim2New(1, 0, 1, 0),
+                BackgroundColor3 = FromRGB(30, 30, 35)
+            })  Items["SearchBox"]:AddToTheme({BackgroundColor3 = "Page Background", BorderColor3 = "Border"})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["SearchBox"].Instance,
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                Color = Library.Theme.Outline,
+                Name = "\0"
+            }):AddToTheme({Color = "Outline"})
+
+            Instances:Create("UIPadding", {
+                Parent = Items["SearchBox"].Instance,
+                PaddingLeft = UDimNew(0, 6),
+                PaddingRight = UDimNew(0, 6)
+            })
+
+            Items["SearchInput"] = Instances:Create("TextBox", {
+                Parent = Items["SearchBox"].Instance,
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(215, 215, 215),
+                PlaceholderColor3 = FromRGB(140, 140, 140),
+                TextSize = 12,
+                ClearTextOnFocus = false,
+                BorderSizePixel = 0,
+                BackgroundTransparency = 1,
+                Size = UDim2New(1, 0, 1, 0),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Text = "",
+                PlaceholderText = "Search...",
+                Name = "\0"
+            })  Items["SearchInput"]:AddToTheme({TextColor3 = "Text"})
             
             Instances:Create("UIListLayout", {
                 Parent = Items["Pages"].Instance,
@@ -2353,6 +2832,27 @@ local Library do
         end
 
         local Debounce = false
+
+        function Window:EnableSearch(Bool)
+            if Bool == nil then
+                Bool = true
+            end
+            Items["SearchContainer"].Instance.Visible = Bool
+            if not Bool then
+                Items["SearchInput"].Instance.Text = ""
+                Window:Filter("")
+            end
+        end
+
+        function Window:Filter(Query)
+            Window:FilterActivePage(Query)
+        end
+
+        if Items["SearchInput"] and Items["SearchInput"].Instance then
+            Library:Connect(Items["SearchInput"].Instance:GetPropertyChangedSignal("Text"), function()
+                Window:Filter(Items["SearchInput"].Instance.Text)
+            end)
+        end
 
         function Window:SetOpen(Bool)
             if Debounce then 
@@ -3456,6 +3956,8 @@ local Library do
             Count = 0
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Toggle"] = Instances:Create("TextButton", {
                 Parent = Toggle.Section.Elements["Content"].Instance,
@@ -3471,6 +3973,8 @@ local Library do
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Toggle"].Instance, TooltipText)
             
             Items["Indicator"] = Instances:Create("Frame", {
                 Parent = Items["Toggle"].Instance,
@@ -3644,6 +4148,8 @@ local Library do
             Callback = Data.Callback or Data.callback or function() end,
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Button"] = Instances:Create("TextButton", {
                 Parent = Button.Section.Elements["Content"].Instance,
@@ -3656,6 +4162,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Button"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["Button"].Instance, TooltipText)
 
             Instances:Create("UIGradient", {
                 Parent = Items["Button"].Instance,
@@ -3756,6 +4264,8 @@ local Library do
             Class = "Slider",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Slider"] = Instances:Create("Frame", {
                 Parent = Slider.Section.Elements["Content"].Instance,
@@ -3766,6 +4276,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Slider"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Slider"].Instance,
@@ -3800,6 +4312,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealSlider"].Instance, TooltipText)
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealSlider"].Instance,
@@ -3907,22 +4421,36 @@ local Library do
             local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
 
             Slider:Set(Value)
+            
+            if Slider.SlideConnection then
+                if Slider.SlideConnection.Connection then
+                    Slider.SlideConnection.Connection:Disconnect()
+                elseif Slider.SlideConnection.Disconnect then
+                    Slider.SlideConnection:Disconnect()
+                end
+            end
+
+            Slider.SlideConnection = Library:Connect(UserInputService.InputChanged, function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseMovement and Slider.Sliding then
+                    local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+                    local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
+
+                    Slider:Set(Value)
+                end
+            end)
         end)
 
         Items["RealSlider"]:Connect("InputEnded", function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                 Slider.Sliding = false
-            end
-        end)
-
-        Library:Connect(UserInputService.InputChanged, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseMovement and Slider.Sliding then
-                local MousePos = UserInputService:GetMouseLocation()
-
-                local SizeX = (MousePos.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
-                local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
-
-                Slider:Set(Value)
+                if Slider.SlideConnection then
+                    if Slider.SlideConnection.Connection then
+                        Slider.SlideConnection.Connection:Disconnect()
+                    elseif Slider.SlideConnection.Disconnect then
+                        Slider.SlideConnection:Disconnect()
+                    end
+                    Slider.SlideConnection = nil
+                end
             end
         end)
 
@@ -3958,6 +4486,8 @@ local Library do
             Class = "Dropdown",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do
             Items["Dropdown"] = Instances:Create("Frame", {
                 Parent = Dropdown.Section.Elements["Content"].Instance,
@@ -3968,6 +4498,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Dropdown"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Dropdown"].Instance,
@@ -4000,6 +4532,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealDropdown"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealDropdown"].Instance, TooltipText)
             
             Instances:Create("UIGradient", {
                 Parent = Items["RealDropdown"].Instance,
@@ -4377,6 +4911,8 @@ local Library do
             Count = 0
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Label"] = Instances:Create("Frame", {
                 Parent = Label.Section.Elements["Content"].Instance,
@@ -4387,6 +4923,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Label"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Label"].Instance,
@@ -4478,6 +5016,8 @@ local Library do
             Class = "Textbox"
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Textbox"] = Instances:Create("Frame", {
                 Parent = Textbox.Section.Elements["Content"].Instance,
@@ -4488,6 +5028,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Textbox"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Textbox"].Instance,
@@ -4520,6 +5062,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Background"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["Background"].Instance, TooltipText)
             
             Instances:Create("UIGradient", {
                 Parent = Items["Background"].Instance,
@@ -4641,6 +5185,8 @@ local Library do
             Class = "Listbox",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Listbox"] = Instances:Create("Frame", {
                 Parent = Listbox.Section.Elements["Content"].Instance,
@@ -4652,6 +5198,8 @@ local Library do
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Listbox"].Instance, TooltipText)
             
             Items["RealListbox"] = Instances:Create("ScrollingFrame", {
                 Parent = Items["Listbox"].Instance,
@@ -4668,6 +5216,8 @@ local Library do
                 BorderSizePixel = 2,
                 CanvasSize = UDim2New(0, 0, 0, 0)
             })  Items["RealListbox"]:AddToTheme({ScrollBarImageColor3 = "Accent", BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealListbox"].Instance, TooltipText)
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealListbox"].Instance,
