@@ -693,6 +693,149 @@ local Library do
         Padding = UDimNew(0, 10)
     }) 
 
+    do
+        local Tooltip = { Visible = false, Text = "" }
+        Library.Tooltip = Tooltip
+
+        local Items = { }
+        Items["Root"] = Instances:Create("Frame", {
+            Parent = Library.Holder.Instance,
+            Name = "\0",
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Visible = false,
+            ZIndex = 999,
+            Size = UDim2New(0, 0, 0, 0),
+            Position = UDim2New(0, 0, 0, 0)
+        })
+
+        Items["Body"] = Instances:Create("Frame", {
+            Parent = Items["Root"].Instance,
+            Name = "\0",
+            AutomaticSize = Enum.AutomaticSize.XY,
+            BorderColor3 = FromRGB(10, 10, 10),
+            BorderSizePixel = 2,
+            BackgroundColor3 = FromRGB(15, 15, 20),
+            ZIndex = 999
+        })  Items["Body"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+        Instances:Create("UIStroke", {
+            Parent = Items["Body"].Instance,
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            LineJoinMode = Enum.LineJoinMode.Miter,
+            Name = "\0",
+            Color = FromRGB(27, 27, 32)
+        }):AddToTheme({Color = "Outline"})
+
+        Instances:Create("UIPadding", {
+            Parent = Items["Body"].Instance,
+            PaddingTop = UDimNew(0, 4),
+            PaddingBottom = UDimNew(0, 4),
+            PaddingLeft = UDimNew(0, 6),
+            PaddingRight = UDimNew(0, 6)
+        })
+
+        Items["Text"] = Instances:Create("TextLabel", {
+            Parent = Items["Body"].Instance,
+            Name = "\0",
+            AutomaticSize = Enum.AutomaticSize.XY,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            FontFace = Library.Font,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Top,
+            TextWrapped = true,
+            TextColor3 = FromRGB(215, 215, 215),
+            Text = "",
+            ZIndex = 999
+        })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+        Instances:Create("UIStroke", {
+            Parent = Items["Text"].Instance,
+            LineJoinMode = Enum.LineJoinMode.Miter,
+            Name = "\0"
+        }):AddToTheme({Color = "Text Border"})
+
+        Library.TooltipItems = Items
+
+        local function UpdateTooltipPosition()
+            if not Tooltip.Visible then
+                return
+            end
+
+            local Root = Items["Root"].Instance
+            local Body = Items["Body"].Instance
+
+            local viewport = Camera.ViewportSize
+            local mx, my = Mouse.X, Mouse.Y
+            local pad = 14
+
+            Root.Position = UDim2New(0, mx + pad, 0, my + pad)
+            task.defer(function()
+                if not Tooltip.Visible then
+                    return
+                end
+                local size = Body.AbsoluteSize
+                local x = mx + pad
+                local y = my + pad
+                if x + size.X > viewport.X - 4 then
+                    x = mx - size.X - pad
+                end
+                if y + size.Y > viewport.Y - 4 then
+                    y = my - size.Y - pad
+                end
+                Root.Position = UDim2New(0, x, 0, y)
+            end)
+        end
+
+        Library:Connect(UserInputService.InputChanged, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                UpdateTooltipPosition()
+            end
+        end, "Tooltip_Follow")
+
+        function Library:ShowTooltip(Text)
+            Text = tostring(Text or "")
+            if Text == "" then
+                return self:HideTooltip()
+            end
+
+            Tooltip.Visible = true
+            Tooltip.Text = Text
+            Items["Text"].Instance.Text = Text
+            Items["Root"].Instance.Visible = true
+            UpdateTooltipPosition()
+        end
+
+        function Library:HideTooltip()
+            Tooltip.Visible = false
+            Tooltip.Text = ""
+            Items["Root"].Instance.Visible = false
+        end
+
+        function Library:BindTooltip(GuiObject, Text)
+            if not GuiObject or type(Text) ~= "string" or Text == "" then
+                return
+            end
+
+            local entering = false
+            self:Connect(GuiObject.MouseEnter, function()
+                entering = true
+                task.delay(0.2, function()
+                    if entering then
+                        Library:ShowTooltip(Text)
+                    end
+                end)
+            end)
+
+            self:Connect(GuiObject.MouseLeave, function()
+                entering = false
+                Library:HideTooltip()
+            end)
+        end
+    end
+
     Library.GetImage = function(self, Image)
         local ImageData = self.Images[Image]
 
@@ -701,6 +844,13 @@ local Library do
         end
 
         return getcustomasset(self.Folders.Assets .. "/" .. ImageData[1])
+    end
+
+    Library.GetTooltip = function(self, Data)
+        if type(Data) ~= "table" then
+            return nil
+        end
+        return Data.Tooltip or Data.tooltip or Data.Tip or Data.tip or Data.Description or Data.description
     end
 
     Library.Round = function(self, Number, Float)
@@ -3806,6 +3956,8 @@ local Library do
             Count = 0
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Toggle"] = Instances:Create("TextButton", {
                 Parent = Toggle.Section.Elements["Content"].Instance,
@@ -3821,6 +3973,8 @@ local Library do
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Toggle"].Instance, TooltipText)
             
             Items["Indicator"] = Instances:Create("Frame", {
                 Parent = Items["Toggle"].Instance,
@@ -3994,6 +4148,8 @@ local Library do
             Callback = Data.Callback or Data.callback or function() end,
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Button"] = Instances:Create("TextButton", {
                 Parent = Button.Section.Elements["Content"].Instance,
@@ -4006,6 +4162,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Button"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["Button"].Instance, TooltipText)
 
             Instances:Create("UIGradient", {
                 Parent = Items["Button"].Instance,
@@ -4106,6 +4264,8 @@ local Library do
             Class = "Slider",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Slider"] = Instances:Create("Frame", {
                 Parent = Slider.Section.Elements["Content"].Instance,
@@ -4116,6 +4276,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Slider"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Slider"].Instance,
@@ -4150,6 +4312,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealSlider"].Instance, TooltipText)
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealSlider"].Instance,
@@ -4322,6 +4486,8 @@ local Library do
             Class = "Dropdown",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do
             Items["Dropdown"] = Instances:Create("Frame", {
                 Parent = Dropdown.Section.Elements["Content"].Instance,
@@ -4332,6 +4498,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Dropdown"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Dropdown"].Instance,
@@ -4364,6 +4532,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealDropdown"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealDropdown"].Instance, TooltipText)
             
             Instances:Create("UIGradient", {
                 Parent = Items["RealDropdown"].Instance,
@@ -4741,6 +4911,8 @@ local Library do
             Count = 0
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Label"] = Instances:Create("Frame", {
                 Parent = Label.Section.Elements["Content"].Instance,
@@ -4751,6 +4923,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Label"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Label"].Instance,
@@ -4842,6 +5016,8 @@ local Library do
             Class = "Textbox"
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Textbox"] = Instances:Create("Frame", {
                 Parent = Textbox.Section.Elements["Content"].Instance,
@@ -4852,6 +5028,8 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Textbox"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Textbox"].Instance,
@@ -4884,6 +5062,8 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Background"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["Background"].Instance, TooltipText)
             
             Instances:Create("UIGradient", {
                 Parent = Items["Background"].Instance,
@@ -5005,6 +5185,8 @@ local Library do
             Class = "Listbox",
         }
 
+        local TooltipText = Library:GetTooltip(Data)
+
         local Items = { } do 
             Items["Listbox"] = Instances:Create("Frame", {
                 Parent = Listbox.Section.Elements["Content"].Instance,
@@ -5016,6 +5198,8 @@ local Library do
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
+
+            Library:BindTooltip(Items["Listbox"].Instance, TooltipText)
             
             Items["RealListbox"] = Instances:Create("ScrollingFrame", {
                 Parent = Items["Listbox"].Instance,
@@ -5032,6 +5216,8 @@ local Library do
                 BorderSizePixel = 2,
                 CanvasSize = UDim2New(0, 0, 0, 0)
             })  Items["RealListbox"]:AddToTheme({ScrollBarImageColor3 = "Accent", BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            Library:BindTooltip(Items["RealListbox"].Instance, TooltipText)
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealListbox"].Instance,
