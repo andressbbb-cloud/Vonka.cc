@@ -826,6 +826,18 @@ local Library do
         self.ThemeMap[Item] = ThemeData
     end
 
+    local function NormalizeConfigName(Name)
+        Name = tostring(Name or "default")
+        if not Name:lower():match("%.json$") then
+            Name ..= ".json"
+        end
+        return Name
+    end
+
+    local function GetConfigPath(Name)
+        return Library.Folders.Configs .. "/" .. NormalizeConfigName(Name)
+    end
+
     Library.GetConfig = function(self)
         local Config = { } 
 
@@ -870,18 +882,131 @@ local Library do
         end
     end
 
-    Library.DeleteConfig = function(self, Config)
-        if isfile(Library.Folders.Configs .. "/" .. Config) then 
-            delfile(Library.Folders.Configs .. "/" .. Config)
-            Library:Notification("Deleted config " .. Config .. ".json", 5, Color3.fromRGB(0, 255, 0))
+    Library.ExportConfig = function(self)
+        return self:GetConfig()
+    end
+
+    Library.ImportConfig = function(self, ConfigString)
+        return self:LoadConfig(ConfigString)
+    end
+
+    Library.CopyConfigToClipboard = function(self)
+        if type(setclipboard) ~= "function" then
+            Library:Notification("Clipboard not supported in this executor", 5, Color3.fromRGB(255, 0, 0))
+            return
         end
+
+        setclipboard(self:GetConfig())
+        Library:Notification("Copied config to clipboard", 5, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.LoadConfigFromFile = function(self, Name)
+        local Path = GetConfigPath(Name)
+        if not isfile(Path) then
+            Library:Notification("Config not found: " .. NormalizeConfigName(Name), 5, Color3.fromRGB(255, 0, 0))
+            return
+        end
+
+        self:LoadConfig(readfile(Path))
+    end
+
+    Library.DeleteConfig = function(self, Config)
+        local Path = GetConfigPath(Config)
+        if not isfile(Path) then
+            Library:Notification("Config not found: " .. NormalizeConfigName(Config), 5, Color3.fromRGB(255, 0, 0))
+            return
+        end
+
+        delfile(Path)
+        Library:Notification("Deleted config " .. NormalizeConfigName(Config), 5, Color3.fromRGB(0, 255, 0))
     end
 
     Library.SaveConfig = function(self, Config)
-        if isfile(Library.Folders.Directory .. "/" .. Library.Folders.Configs .. "/" .. Config .. ".json") then
-            writefile(Library.Folders.Directory .. "/" .. Library.Folders.Configs .. "/" .. Config .. ".json", Library:GetConfig())
-            Library:Notification("Saved config " .. Config .. ".json", 5, Color3.fromRGB(0, 255, 0))
+        local Path = GetConfigPath(Config)
+        writefile(Path, Library:GetConfig())
+        Library:Notification("Saved config " .. NormalizeConfigName(Config), 5, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.ThemePresets = Library.ThemePresets or {
+        Default = {
+            ["Background"] = FromRGB(15, 15, 20),
+            ["Inline"] = FromRGB(20, 20, 25),
+            ["Page Background"] = FromRGB(30, 30, 35),
+            ["Border"] = FromRGB(10, 10, 10),
+            ["Outline"] = FromRGB(27, 27, 32),
+            ["Accent"] = FromRGB(255, 0, 0),
+            ["Element"] = FromRGB(33, 33, 36),
+            ["Hovered Element"] = FromRGB(40, 40, 43),
+            ["Text"] = FromRGB(215, 215, 215),
+            ["Text Border"] = FromRGB(0, 0, 0)
+        },
+        Light = {
+            ["Background"] = FromRGB(235, 235, 240),
+            ["Inline"] = FromRGB(220, 220, 225),
+            ["Page Background"] = FromRGB(210, 210, 215),
+            ["Border"] = FromRGB(140, 140, 150),
+            ["Outline"] = FromRGB(180, 180, 190),
+            ["Accent"] = FromRGB(0, 120, 255),
+            ["Element"] = FromRGB(240, 240, 245),
+            ["Hovered Element"] = FromRGB(230, 230, 235),
+            ["Text"] = FromRGB(25, 25, 25),
+            ["Text Border"] = FromRGB(255, 255, 255)
+        },
+        Midnight = {
+            ["Background"] = FromRGB(10, 10, 14),
+            ["Inline"] = FromRGB(14, 14, 18),
+            ["Page Background"] = FromRGB(18, 18, 24),
+            ["Border"] = FromRGB(0, 0, 0),
+            ["Outline"] = FromRGB(30, 30, 40),
+            ["Accent"] = FromRGB(255, 90, 140),
+            ["Element"] = FromRGB(22, 22, 28),
+            ["Hovered Element"] = FromRGB(30, 30, 36),
+            ["Text"] = FromRGB(235, 235, 235),
+            ["Text Border"] = FromRGB(0, 0, 0)
+        }
+    }
+
+    Library.ApplyThemePreset = function(self, PresetName)
+        local Preset = self.ThemePresets[PresetName]
+        if not Preset then
+            Library:Notification("Unknown theme preset: " .. tostring(PresetName), 5, Color3.fromRGB(255, 0, 0))
+            return
         end
+
+        for Key, Color in Preset do
+            self:ChangeTheme(Key, Color)
+        end
+
+        Library:Notification("Applied theme preset: " .. tostring(PresetName), 3, Color3.fromRGB(0, 255, 0))
+    end
+
+    Library.RainbowAccent = Library.RainbowAccent or { Enabled = false, Speed = 0.25 }
+    Library.SetRainbowAccent = function(self, Enabled, Speed)
+        self.RainbowAccent.Enabled = not not Enabled
+        if type(Speed) == "number" and Speed > 0 then
+            self.RainbowAccent.Speed = Speed
+        end
+
+        if not self.RainbowAccent.Enabled then
+            return
+        end
+
+        if self.RainbowAccent._thread then
+            return
+        end
+
+        self.RainbowAccent._thread = self:Thread(function()
+            local t0 = os.clock()
+            while Library and Library.RainbowAccent and Library.RainbowAccent.Enabled do
+                local t = os.clock() - t0
+                local h = (t * (Library.RainbowAccent.Speed or 0.25)) % 1
+                Library:ChangeTheme("Accent", FromHSV(h, 0.9, 1))
+                task.wait(0.03)
+            end
+            if Library and Library.RainbowAccent then
+                Library.RainbowAccent._thread = nil
+            end
+        end)
     end
 
     Library.RefreshConfigsList = function(self, Element)
@@ -926,6 +1051,71 @@ local Library do
 
         return MousePosition.X >= Frame.AbsolutePosition.X and MousePosition.X <= Frame.AbsolutePosition.X + Frame.AbsoluteSize.X 
         and MousePosition.Y >= Frame.AbsolutePosition.Y and MousePosition.Y <= Frame.AbsolutePosition.Y + Frame.AbsoluteSize.Y
+    end
+
+    Library.GetActivePage = function(self)
+        for _, Page in self.Pages do
+            if Page.Active then
+                return Page
+            end
+        end
+    end
+
+    Library.GetActiveColumns = function(self, Page)
+        if not Page then
+            return
+        end
+
+        if Page.HasSubtabs then
+            for _, Sub in Page.SubPages do
+                if Sub.Active then
+                    return Sub.ColumnsData
+                end
+            end
+            return
+        end
+
+        return Page.ColumnsData
+    end
+
+    Library.FilterActivePage = function(self, Query)
+        Query = tostring(Query or "")
+        Query = Query:lower():gsub("^%s+", ""):gsub("%s+$", "")
+
+        local Page = self:GetActivePage()
+        local Columns = self:GetActiveColumns(Page)
+        if not Columns then
+            return
+        end
+
+        for _, Column in Columns do
+            local ColumnInstance = Column.Instance or Column
+            for _, Child in ColumnInstance:GetChildren() do
+                if Child:IsA("Frame") then
+                    if Query == "" then
+                        Child.Visible = true
+                    else
+                        local Match = false
+                        for _, Desc in Child:GetDescendants() do
+                            if Desc:IsA("TextLabel") or Desc:IsA("TextButton") then
+                                local t = tostring(Desc.Text or ""):lower()
+                                if t:find(Query, 1, true) then
+                                    Match = true
+                                    break
+                                end
+                            elseif Desc:IsA("TextBox") then
+                                local t = tostring(Desc.PlaceholderText or ""):lower()
+                                if t:find(Query, 1, true) then
+                                    Match = true
+                                    break
+                                end
+                            end
+                        end
+                        Child.Visible = Match
+                    end
+                end
+            end
+        end
     end
 
     Library.Watermark = function(self, Name)
@@ -2413,6 +2603,56 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })
+
+            Items["SearchContainer"] = Instances:Create("Frame", {
+                Parent = Items["Inline"].Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2New(1, 0),
+                Position = UDim2New(1, -7, 0, 7),
+                Size = UDim2New(0, 140, 0, 19),
+                BorderSizePixel = 0,
+                Visible = false
+            })
+
+            Items["SearchBox"] = Instances:Create("Frame", {
+                Parent = Items["SearchContainer"].Instance,
+                Name = "\0",
+                BorderColor3 = FromRGB(10, 10, 10),
+                BorderSizePixel = 2,
+                Size = UDim2New(1, 0, 1, 0),
+                BackgroundColor3 = FromRGB(30, 30, 35)
+            })  Items["SearchBox"]:AddToTheme({BackgroundColor3 = "Page Background", BorderColor3 = "Border"})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["SearchBox"].Instance,
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                Color = Library.Theme.Outline,
+                Name = "\0"
+            }):AddToTheme({Color = "Outline"})
+
+            Instances:Create("UIPadding", {
+                Parent = Items["SearchBox"].Instance,
+                PaddingLeft = UDimNew(0, 6),
+                PaddingRight = UDimNew(0, 6)
+            })
+
+            Items["SearchInput"] = Instances:Create("TextBox", {
+                Parent = Items["SearchBox"].Instance,
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(215, 215, 215),
+                PlaceholderColor3 = FromRGB(140, 140, 140),
+                TextSize = 12,
+                ClearTextOnFocus = false,
+                BorderSizePixel = 0,
+                BackgroundTransparency = 1,
+                Size = UDim2New(1, 0, 1, 0),
+                TextXAlignment = Enum.TextXAlignment.Left,
+                Text = "",
+                PlaceholderText = "Search...",
+                Name = "\0"
+            })  Items["SearchInput"]:AddToTheme({TextColor3 = "Text"})
             
             Instances:Create("UIListLayout", {
                 Parent = Items["Pages"].Instance,
@@ -2442,6 +2682,27 @@ local Library do
         end
 
         local Debounce = false
+
+        function Window:EnableSearch(Bool)
+            if Bool == nil then
+                Bool = true
+            end
+            Items["SearchContainer"].Instance.Visible = Bool
+            if not Bool then
+                Items["SearchInput"].Instance.Text = ""
+                Window:Filter("")
+            end
+        end
+
+        function Window:Filter(Query)
+            Window:FilterActivePage(Query)
+        end
+
+        if Items["SearchInput"] and Items["SearchInput"].Instance then
+            Library:Connect(Items["SearchInput"].Instance:GetPropertyChangedSignal("Text"), function()
+                Window:Filter(Items["SearchInput"].Instance.Text)
+            end)
+        end
 
         function Window:SetOpen(Bool)
             if Debounce then 
