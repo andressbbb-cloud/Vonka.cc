@@ -720,13 +720,14 @@ local Library do
         })
         Library:AddToTheme(Items["Body"].Instance, {BackgroundColor3 = "Background", BorderColor3 = "Border"})
 
-        Instances:Create("UIStroke", {
+        local BodyStroke = Instances:Create("UIStroke", {
             Parent = Items["Body"].Instance,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
             LineJoinMode = Enum.LineJoinMode.Miter,
             Name = "\0",
             Color = FromRGB(27, 27, 32)
-        }):AddToTheme({Color = "Outline"})
+        })
+        Library:AddToTheme(BodyStroke.Instance, {Color = "Outline"})
 
         Instances:Create("UIPadding", {
             Parent = Items["Body"].Instance,
@@ -753,11 +754,12 @@ local Library do
         })
         Library:AddToTheme(Items["Text"].Instance, {TextColor3 = "Text"})
 
-        Instances:Create("UIStroke", {
+        local TextStroke = Instances:Create("UIStroke", {
             Parent = Items["Text"].Instance,
             LineJoinMode = Enum.LineJoinMode.Miter,
             Name = "\0"
-        }):AddToTheme({Color = "Text Border"})
+        })
+        Library:AddToTheme(TextStroke.Instance, {Color = "Text Border"})
 
         Library.TooltipItems = Items
 
