@@ -717,7 +717,8 @@ local Library do
             BorderSizePixel = 2,
             BackgroundColor3 = FromRGB(15, 15, 20),
             ZIndex = 999
-        })  Items["Body"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+        })
+        Library:AddToTheme(Items["Body"].Instance, {BackgroundColor3 = "Background", BorderColor3 = "Border"})
 
         Instances:Create("UIStroke", {
             Parent = Items["Body"].Instance,
@@ -749,7 +750,8 @@ local Library do
             TextColor3 = FromRGB(215, 215, 215),
             Text = "",
             ZIndex = 999
-        })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+        })
+        Library:AddToTheme(Items["Text"].Instance, {TextColor3 = "Text"})
 
         Instances:Create("UIStroke", {
             Parent = Items["Text"].Instance,
@@ -3956,7 +3958,7 @@ local Library do
             Count = 0
         }
 
-        local TooltipText = Library:GetTooltip(Data)
+        local TooltipText = Library:GetTooltip(Data) or Toggle.Name
 
         local Items = { } do 
             Items["Toggle"] = Instances:Create("TextButton", {
