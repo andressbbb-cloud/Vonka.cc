@@ -890,6 +890,35 @@ local Library do
                 Library:HideTooltip()
             end)
         end
+
+        function Library:AddTooltipIcon(Parent, TooltipText)
+            if not Parent or type(TooltipText) ~= "string" or TooltipText == "" then
+                return
+            end
+
+            local Icon = InstanceNew("TextButton")
+            Icon.Name = "\0"
+            Icon.Parent = Parent
+            Icon.BackgroundTransparency = 1
+            Icon.AutoButtonColor = false
+            Icon.Size = UDim2New(0, 12, 0, 12)
+            Icon.AnchorPoint = Vector2New(1, 0)
+            Icon.Position = UDim2New(1, 0, 0, 0)
+            Icon.FontFace = Library.Font
+            Icon.Text = "?"
+            Icon.TextSize = 12
+            Icon.TextTransparency = 0.35
+            Icon.TextColor3 = Library.Theme and (Library.Theme["Text"] or FromRGB(215, 215, 215)) or FromRGB(215, 215, 215)
+            Icon.ZIndex = (Parent.ZIndex or 1) + 1
+
+            -- allow theme updates if theme table exists
+            if Library.AddToTheme then
+                Library:AddToTheme(Icon, { TextColor3 = "Text" })
+            end
+
+            self:BindTooltip(Icon, TooltipText)
+            return Icon
+        end
     end
 
     Library.GetImage = function(self, Image)
@@ -4071,7 +4100,7 @@ local Library do
                 TextTransparency = 0.48,
                 Text = Toggle.Name,
                 Name = "\0",
-                Size = UDim2New(1, 0, 1, 0),
+                Size = UDim2New(1, -14, 1, 0),
                 Position = UDim2New(0, 18, 0, -1),
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -4080,6 +4109,10 @@ local Library do
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Toggle"].Instance, TooltipText)
+            end
             
             Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
@@ -4251,7 +4284,7 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = Button.Name,
                 Name = "\0",
-                Size = UDim2New(1, 0, 1, 0),
+                Size = UDim2New(1, -14, 1, 0),
                 BackgroundTransparency = 1,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 Position = UDim2New(0, 0, 0, -1),
@@ -4259,6 +4292,10 @@ local Library do
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Button"].Instance, TooltipText)
+            end
             
             Items["TextBorder"] = Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
@@ -4353,11 +4390,15 @@ local Library do
                 Name = "\0",
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Size = UDim2New(1, 0, 0, 13),
+                Size = UDim2New(1, -14, 0, 13),
                 BorderSizePixel = 0,
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Slider"].Instance, TooltipText)
+            end
             
             Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
@@ -4575,11 +4616,15 @@ local Library do
                 Name = "\0",
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Size = UDim2New(1, 0, 0, 13),
+                Size = UDim2New(1, -14, 0, 13),
                 BorderSizePixel = 0,
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Dropdown"].Instance, TooltipText)
+            end
 
             Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
@@ -5000,11 +5045,15 @@ local Library do
                 Name = "\0",
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment[Label.Alignment],
-                Size = UDim2New(1, 0, 1, 0),
+                Size = UDim2New(1, -14, 1, 0),
                 BorderSizePixel = 0,
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Label"].Instance, TooltipText)
+            end
 
             Instances:Create("UIStroke", {
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
@@ -5105,11 +5154,15 @@ local Library do
                 Name = "\0",
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Size = UDim2New(1, 0, 0, 13),
+                Size = UDim2New(1, -14, 0, 13),
                 BorderSizePixel = 0,
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            if type(TooltipText) == "string" and TooltipText ~= "" then
+                self:AddTooltipIcon(Items["Textbox"].Instance, TooltipText)
+            end
             
             Instances:Create("UIStroke", {
                 Parent = Items["Text"].Instance,
