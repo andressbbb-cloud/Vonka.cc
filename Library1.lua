@@ -896,11 +896,12 @@ local Library do
                 return
             end
 
-            local Icon = InstanceNew("TextButton")
+            -- Use TextLabel (not a button) so it can't interfere with
+            -- click/pick interactions on the parent control (ex: keybind picking).
+            local Icon = InstanceNew("TextLabel")
             Icon.Name = "\0"
             Icon.Parent = Parent
             Icon.BackgroundTransparency = 1
-            Icon.AutoButtonColor = false
             Icon.Size = UDim2New(0, 12, 0, 12)
             Icon.AnchorPoint = Vector2New(1, 0)
             Icon.Position = UDim2New(1, 0, 0, 0)
@@ -910,6 +911,8 @@ local Library do
             Icon.TextTransparency = 0.35
             Icon.TextColor3 = Library.Theme and (Library.Theme["Text"] or FromRGB(215, 215, 215)) or FromRGB(215, 215, 215)
             Icon.ZIndex = (Parent.ZIndex or 1) + 1
+            Icon.TextXAlignment = Enum.TextXAlignment.Center
+            Icon.TextYAlignment = Enum.TextYAlignment.Center
 
             -- allow theme updates if theme table exists
             if Library.AddToTheme then
@@ -4067,7 +4070,6 @@ local Library do
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Toggle"].Instance, TooltipText)
             
             Items["Indicator"] = Instances:Create("Frame", {
@@ -4378,7 +4380,6 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Slider"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
@@ -4604,7 +4605,6 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Dropdown"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
@@ -5033,7 +5033,6 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Label"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
@@ -5142,7 +5141,6 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Textbox"].Instance, TooltipText)
             
             Items["Text"] = Instances:Create("TextLabel", {
@@ -5316,7 +5314,6 @@ local Library do
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-
             Library:BindTooltip(Items["Listbox"].Instance, TooltipText)
             
             Items["RealListbox"] = Instances:Create("ScrollingFrame", {
