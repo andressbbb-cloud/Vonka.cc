@@ -1,0 +1,4623 @@
+do
+    local lp = game:GetService("Players").LocalPlayer
+    local gui = lp:WaitForChild("PlayerGui")
+    local Lighting = game:GetService("Lighting")
+    local TweenService = game:GetService("TweenService")
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "VonkaCinematicIntro"
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = gui
+
+    -- Cinematic Lighting Effects
+    local Blur = Instance.new("BlurEffect")
+    Blur.Size = 0
+    Blur.Parent = Lighting
+
+    local CC = Instance.new("ColorCorrectionEffect")
+    CC.TintColor = Color3.fromRGB(255, 255, 255)
+    CC.Contrast = 0
+    CC.Saturation = 0
+    CC.Parent = Lighting
+
+    -- Background (starts transparent, fades in)
+    local BG = Instance.new("Frame")
+    BG.Size = UDim2.fromScale(1, 1)
+    BG.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+    BG.BackgroundTransparency = 1
+    BG.BorderSizePixel = 0
+    BG.Parent = ScreenGui
+
+    -- Vignette (darkened edges, starts invisible)
+    local Vignette = Instance.new("ImageLabel")
+    Vignette.Size = UDim2.fromScale(1, 1)
+    Vignette.BackgroundTransparency = 1
+    Vignette.Image = "rbxassetid://13501258169"
+    Vignette.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    Vignette.ImageTransparency = 1
+    Vignette.Parent = BG
+
+    -- Grid / Particles (starts invisible)
+    local Grid = Instance.new("ImageLabel")
+    Grid.Size = UDim2.fromScale(1, 1)
+    Grid.BackgroundTransparency = 1
+    Grid.Image = "rbxassetid://43033504"
+    Grid.ImageTransparency = 1
+    Grid.ImageColor3 = Color3.fromRGB(255, 20, 50)
+    Grid.ScaleType = Enum.ScaleType.Tile
+    Grid.TileSize = UDim2.fromOffset(256, 256)
+    Grid.Parent = BG
+
+    -- Logo (starts invisible and slightly smaller)
+    local Logo = Instance.new("ImageLabel")
+    Logo.Size = UDim2.fromOffset(200, 200)
+    Logo.Position = UDim2.fromScale(0.5, 0.5)
+    Logo.AnchorPoint = Vector2.new(0.5, 0.5)
+    Logo.BackgroundTransparency = 1
+    Logo.Image = "rbxassetid://75743174422975"
+    Logo.ImageTransparency = 1
+    Logo.ScaleType = Enum.ScaleType.Fit
+    Logo.Rotation = -5
+    Logo.Parent = BG
+
+    -- Cinematic Sounds
+    local YeatSound = Instance.new("Sound")
+    YeatSound.SoundId = "rbxassetid://122018002470606"
+    YeatSound.Volume = 1.5
+    YeatSound.Parent = game:GetService("SoundService")
+
+    if not YeatSound.IsLoaded then YeatSound.Loaded:Wait() end
+    YeatSound:Play()
+
+    -- === PHASE 1: Fade In (0.6s) ===
+    local fadeInInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+    TweenService:Create(BG, fadeInInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Vignette, fadeInInfo, {ImageTransparency = 0.2}):Play()
+    TweenService:Create(Grid, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0.8}):Play()
+    TweenService:Create(Blur, fadeInInfo, {Size = 24}):Play()
+    TweenService:Create(CC, fadeInInfo, {Contrast = 0.2, Saturation = -0.5}):Play()
+
+    task.wait(0.3)
+
+    -- === PHASE 2: Logo Reveal (0.8s) ===
+    local logoRevealInfo = TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+    TweenService:Create(Logo, logoRevealInfo, {
+        ImageTransparency = 0,
+        Size = UDim2.fromOffset(300, 300),
+        Rotation = 0
+    }):Play()
+
+    -- Wait for the sound duration
+    task.wait(2.2)
+
+    -- === PHASE 3: Fade Out (0.8s) ===
+    local fadeOutInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
+    TweenService:Create(Logo, fadeOutInfo, {
+        ImageTransparency = 1,
+        Size = UDim2.fromOffset(500, 500),
+        Rotation = 10
+    }):Play()
+
+    task.wait(0.3)
+
+    local bgFadeInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+
+    TweenService:Create(Grid, bgFadeInfo, {ImageTransparency = 1}):Play()
+    TweenService:Create(Vignette, bgFadeInfo, {ImageTransparency = 1}):Play()
+    TweenService:Create(BG, bgFadeInfo, {BackgroundTransparency = 1}):Play()
+
+    -- Restore Lighting
+    TweenService:Create(Blur, bgFadeInfo, {Size = 0}):Play()
+    TweenService:Create(CC, bgFadeInfo, {Contrast = 0, Saturation = 0}):Play()
+
+    task.wait(0.8)
+
+    YeatSound:Destroy()
+    Blur:Destroy()
+    CC:Destroy()
+    ScreenGui:Destroy()
+end
+
+local Library
+if isfile and readfile and isfile("Library.lua") then
+    Library = loadstring(readfile("Library.lua"))()
+else
+    Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/andressbbb-cloud/Vonka.cc/refs/heads/main/Library.lua"))()
+end
+
+-- Auto-tooltips for EVERY toggle in this example:
+-- If you didn't specify Tooltip, it will default to the toggle Name.
+do
+    local oldToggle = Library and Library.Sections and Library.Sections.Toggle
+    if type(oldToggle) == "function" then
+        Library.Sections.Toggle = function(self, Data)
+            Data = Data or {}
+            Data.Tooltip = Data.Tooltip or Data.tooltip or Data.Description or Data.description or Data.Tip or Data.tip or Data.Name or Data.name
+            return oldToggle(self, Data)
+        end
+    end
+end
+
+local Window = Library:Window({
+    Name = "Vonka.cc -- discord.gg/vonka", 
+    Size = UDim2.new(0, 700, 0, 550), 
+    FadeSpeed = 0
+})
+
+local Watermark = Library:Watermark("Vonka.cc" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name)
+
+-- Real-time Ping and FPS tracking for Watermark
+task.spawn(function()
+    local RS = game:GetService("RunService")
+    local Stats = game:GetService("Stats")
+    
+    local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+    local frames = 0
+    local lastTime = tick()
+    
+    RS.RenderStepped:Connect(function()
+        frames = frames + 1
+        local now = tick()
+        
+        if now - lastTime >= 1 then
+            local fps = frames
+            frames = 0
+            lastTime = now
+            
+            local ping = 0
+            
+            -- Method 1: PerformanceStats (Works on 99% of executors natively)
+            local success = pcall(function()
+                ping = math.floor(Stats.PerformanceStats.Ping:GetValue())
+            end)
+            
+            -- Method 2: Network Server Stats (Fallback)
+            if not success or ping == 0 then
+                pcall(function()
+                    ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+                end)
+            end
+            
+            -- Hard update the UI label
+            if Watermark and Watermark.SetText then
+                Watermark:SetText(string.format("Vonka.cc / %d ms / %d fps / %s", ping, fps, gameName))
+            end
+        end
+    end)
+end)
+local KeybindList = Library:KeybindList()
+
+Watermark:SetVisibility(false)
+KeybindList:SetVisibility(false)
+
+local Flags = Library.Flags
+
+-- Helper to read flag values safely
+local function F(flag)
+    local v = (Flags and Flags[flag])
+    if v == nil then return false end
+    if type(v) == "table" then
+        local res = v.Color or v.Key or v.Toggled
+        if res ~= nil then return res end
+        return v
+    end
+    return v
+end
+
+local DrawingLib = type(Drawing) == "table" and Drawing or nil
+
+local function makeDrawing(kind)
+    if DrawingLib and type(DrawingLib.new) == "function" then
+        local ok, obj = pcall(DrawingLib.new, kind)
+        if ok and obj then
+            return obj
+        end
+    end
+
+    return setmetatable({
+        Visible = false,
+        Remove = function() end,
+        Destroy = function() end,
+    }, {
+        __index = function(t, k)
+            return rawget(t, k)
+        end,
+        __newindex = function(t, k, v)
+            rawset(t, k, v)
+        end,
+    })
+end
+
+-- Checks if a feature should be active based on its toggle and optional keybind
+local function active(toggleFlag, keyFlag)
+    if not F(toggleFlag) then return false end
+    if not keyFlag then return true end
+    
+    local flagVal = Flags[keyFlag]
+    if not flagVal or type(flagVal) ~= "table" then return true end
+    
+    local keyStr = flagVal.Key
+    if not keyStr or keyStr == "" then return true end
+    
+    local keyName = tostring(keyStr):match("KeyCode%.(.+)$")
+    if not keyName or keyName == "Unknown" then return true end
+    
+    local mode = flagVal.Mode or "Toggle"
+    if mode == "Toggle" then
+        return flagVal.Toggled == true
+    else
+        -- Hold mode: check IsKeyDown
+        local ok, kc = pcall(function() return Enum.KeyCode[keyName] end)
+        if not ok or not kc then return true end
+        return game:GetService("UserInputService"):IsKeyDown(kc)
+    end
+end
+
+local LegitTab    = Window:Page({Icon = "10709769508", Columns = 2, Subtabs = true})
+local AimbotPage  = LegitTab:SubPage({Name = "Aimbot", Columns = 2})
+local SilentPage  = LegitTab:SubPage({Name = "Silent Aim", Columns = 2})
+local TriggerPage = LegitTab:SubPage({Name = "Triggerbot", Columns = 2})
+
+do
+    local Main     = AimbotPage:Section({Name = "Main", Side = 1})
+    local Visuals  = AimbotPage:Section({Name = "Visuals", Side = 1})
+    local Settings = AimbotPage:Section({Name = "Settings", Side = 2})
+    local Checks   = AimbotPage:Section({Name = "Checks", Side = 2})
+    
+    -- Main Section
+    Main:Toggle({
+        Name = "Enable Aimbot",
+        Tooltip = "Enables aim assist.\nUse with smoothing + checks for legit settings.",
+        Flag = "Aimbot Enabled",
+        Default = false,
+        Callback = function()end
+    })
+        :Keybind({
+            Name = "Aimbot Key",
+            Tooltip = "Key used to activate aimbot.\nHold mode only aims while pressed.",
+            Flag = "Aimbot Key",
+            Default = Enum.KeyCode.Q,
+            Mode = "Hold",
+            Callback = function()end
+        })
+    
+    Main:Dropdown({
+        Name = "Aimbot Type", 
+        Tooltip = "Camera: rotates camera to target.\nMouse: moves your mouse toward target.",
+        Flag = "Aimbot Type", 
+        Default = "Camera", 
+        Items = {"Camera", "Mouse"}, 
+        Callback = function()end
+    })
+    
+    Main:Dropdown({
+        Name = "Target Part", 
+        Tooltip = "Which body part to aim at.",
+        Flag = "Aimbot Part", 
+        Default = "Head", 
+        Items = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, 
+        Callback = function()end
+    })
+
+    Main:Dropdown({
+        Name = "Target Method", 
+        Tooltip = "Closest to Mouse: picks target closest to crosshair.\nFOV: restricts to your FOV circle.",
+        Flag = "Aimbot Target Method", 
+        Default = "Closest to Mouse", 
+        Items = {"Closest to Mouse", "FOV"}, 
+        Callback = function()end
+    })
+    
+    -- Visuals Section
+    Visuals:Toggle({
+        Name = "FOV Circle",
+        Tooltip = "Draws your aimbot FOV on screen.",
+        Flag = "Aimbot FOV Visible",
+        Default = false,
+        Callback = function()end
+    })
+    
+    Visuals:Dropdown({
+        Name = "FOV Shape", 
+        Tooltip = "Changes the shape style of the FOV indicator.",
+        Flag = "Aimbot FOV Shape", 
+        Default = "Circle", 
+        Items = {"Circle", "Square", "Dotted Circle"}, 
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "FOV Size", 
+        Tooltip = "Bigger FOV = targets further from your crosshair.",
+        Flag = "Aimbot FOV", 
+        Min = 10, 
+        Max = 500, 
+        Default = 120, 
+        Decimals = 1, 
+        Suffix = "px", 
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "FOV Thickness", 
+        Tooltip = "Thickness of the FOV outline.",
+        Flag = "Aimbot FOV Thickness", 
+        Min = 1, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 1, 
+        Suffix = "px", 
+        Callback = function()end
+    })
+    
+    Visuals:Label({Name = "FOV Color", Alignment = "Left"}):Colorpicker({
+        Name = "FOV Color", 
+        Flag = "Aimbot FOV Color", 
+        Default = Color3.fromRGB(255, 0, 0), 
+        Callback = function()end
+    })
+    
+    Visuals:Toggle({
+        Name = "Rainbow FOV",
+        Tooltip = "Cycles the FOV color through the rainbow.",
+        Flag = "Aimbot FOV Rainbow",
+        Default = false,
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "Rainbow Speed", 
+        Tooltip = "How fast the rainbow cycles.",
+        Flag = "Aimbot FOV Rainbow Speed", 
+        Min = 0.1, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "x", 
+        Callback = function()end
+    })
+    
+    Visuals:Toggle({
+        Name = "Spin FOV",
+        Tooltip = "Rotates the FOV indicator (visual only).",
+        Flag = "Aimbot FOV Spin",
+        Default = false,
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "Spin Speed", 
+        Tooltip = "Rotation speed for the spinning FOV.",
+        Flag = "Aimbot FOV Spin Speed", 
+        Min = 1, 
+        Max = 720, 
+        Default = 90, 
+        Decimals = 1, 
+        Suffix = "deg/s", 
+        Callback = function()end
+    })
+
+    -- Settings Section
+    Settings:Toggle({
+        Name = "Smoothing",
+        Tooltip = "Smooths aim movement to look more human.\nRecommended for legit.",
+        Flag = "Aimbot Smooth",
+        Default = false,
+        Callback = function()end
+    })
+    
+    Settings:Dropdown({
+        Name = "Smooth Type", 
+        Flag = "Aimbot Smooth Type", 
+        Default = "Exponential", 
+        Items = {"Linear", "Exponential", "Quadratic", "Cubic", "Sine", "Elastic", "Spring"}, 
+        Callback = function()end
+    })
+    
+    Settings:Slider({
+        Name = "Smooth Amount", 
+        Flag = "Aimbot Smooth Amount", 
+        Min = 1, 
+        Max = 100, 
+        Default = 20, 
+        Decimals = 1, 
+        Suffix = "%", 
+        Callback = function()end
+    })
+    
+    Settings:Divider()
+
+    local PB
+    Settings:Toggle({
+        Name = "Prediction", 
+        Flag = "Aimbot Prediction", 
+        Default = false, 
+        Callback = function(v) 
+            PB:SetVisibility(v) 
+        end
+    })
+    
+    PB = Settings:Textbox({
+        Name = "Prediction Amount", 
+        Flag = "Aimbot Prediction Amount", 
+        Default = "0.15", 
+        Placeholder = "e.g. 0.15", 
+        Callback = function()end
+    })
+    PB:SetVisibility(false)
+
+    Settings:Divider()
+
+    local RT
+    Settings:Toggle({
+        Name = "Resolver", 
+        Flag = "Aimbot Resolver", 
+        Default = false, 
+        Callback = function(v) 
+            RT:SetVisibility(v) 
+        end
+    })
+    
+    RT = Settings:Dropdown({
+        Name = "Resolver Type", 
+        Flag = "Aimbot Resolver Type", 
+        Default = "Velocity", 
+        Items = {"Velocity", "No Prediction"}, 
+        Callback = function()end
+    })
+    RT:SetVisibility(false)
+    
+    Settings:Toggle({Name = "Sticky Aim", Flag = "Aimbot Sticky", Default = false, Callback = function()end})
+    Settings:Toggle({Name = "Shake", Flag = "Aimbot Shake", Default = false, Callback = function()end})
+    
+    Settings:Slider({
+        Name = "Shake Intensity", 
+        Flag = "Aimbot Shake Intensity", 
+        Min = 0.1, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "", 
+        Callback = function()end
+    })
+    
+    Settings:Dropdown({
+        Name = "Shake Pattern", 
+        Flag = "Aimbot Shake Pattern", 
+        Default = "Random", 
+        Items = {"Random", "Circular", "Horizontal", "Vertical", "Zigzag"}, 
+        Callback = function()end
+    })
+    
+    -- Checks Section
+    Checks:Toggle({Name = "Friend Check", Flag = "Check Friend", Default = false, Callback = function()end})
+    Checks:Toggle({Name = "Knock Check", Flag = "Check Knock", Default = false, Callback = function()end})
+    Checks:Toggle({Name = "Wall Check", Flag = "Check Wall", Default = false, Callback = function()end})
+end
+
+do -- Silent Aim
+    local Main     = SilentPage:Section({Name = "Main", Side = 1})
+    local Visuals  = SilentPage:Section({Name = "Visuals", Side = 1})
+    local Settings = SilentPage:Section({Name = "Settings", Side = 2})
+    local Checks   = SilentPage:Section({Name = "Checks", Side = 2})
+    
+    Main:Toggle({Name = "Enable Silent Aim", Flag = "Silent Enabled", Default = false, Callback = function()end})
+        :Keybind({Name = "Silent Key", Flag = "Silent Key", Default = Enum.KeyCode.E, Mode = "Toggle", Callback = function()end})
+
+    Main:Dropdown({
+        Name = "Target Method", 
+        Flag = "Silent Target Method", 
+        Default = "Closest to Mouse", 
+        Items = {"Closest to Mouse", "FOV"}, 
+        Callback = function()end
+    })
+
+    Main:Dropdown({
+        Name = "Target Part", 
+        Flag = "Silent Part", 
+        Default = {"Head"}, 
+        Items = {"Head", "HumanoidRootPart", "UpperTorso", "LowerTorso"}, 
+        Multi = true,
+        Callback = function()end
+    })
+
+    Main:Toggle({Name = "Closest Part", Flag = "Silent Closest Part", Default = false, Callback = function()end})
+
+    Visuals:Toggle({Name = "FOV Circle", Flag = "Silent FOV Visible", Default = false, Callback = function()end})
+    
+    Visuals:Dropdown({
+        Name = "FOV Shape", 
+        Flag = "Silent FOV Shape", 
+        Default = "Circle", 
+        Items = {"Circle", "Square", "Dotted Circle"}, 
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "FOV Size", 
+        Flag = "Silent FOV", 
+        Min = 10, 
+        Max = 500, 
+        Default = 120, 
+        Decimals = 1, 
+        Suffix = "px", 
+        Callback = function()end
+    })
+    
+    Visuals:Slider({
+        Name = "FOV Thickness", 
+        Flag = "Silent FOV Thickness", 
+        Min = 1, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 1, 
+        Suffix = "px", 
+        Callback = function()end
+    })
+    
+    Visuals:Label({Name = "FOV Color", Alignment = "Left"}):Colorpicker({
+        Name = "FOV Color", 
+        Flag = "FOV Color", 
+        Default = Color3.fromRGB(255, 0, 0), 
+        Callback = function()end
+    })
+    
+    Visuals:Toggle({Name = "Rainbow FOV", Flag = "Silent FOV Rainbow", Default = false, Callback = function()end})
+    
+    Visuals:Slider({
+        Name = "Rainbow Speed", 
+        Flag = "Silent FOV Rainbow Speed", 
+        Min = 0.1, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "x", 
+        Callback = function()end
+    })
+    
+    Visuals:Toggle({Name = "Spin FOV", Flag = "Silent FOV Spin", Default = false, Callback = function()end})
+    
+    Visuals:Slider({
+        Name = "Spin Speed", 
+        Flag = "Silent FOV Spin Speed", 
+        Min = 1, 
+        Max = 720, 
+        Default = 90, 
+        Decimals = 1, 
+        Suffix = "deg/s", 
+        Callback = function()end
+    })
+
+    local SPB
+    Settings:Toggle({
+        Name = "Prediction", 
+        Flag = "Silent Prediction", 
+        Default = false, 
+        Callback = function(v) 
+            if SPB then SPB:SetVisibility(v) end
+        end
+    })
+    
+    SPB = Settings:Textbox({
+        Name = "Prediction Amount", 
+        Flag = "Silent Prediction Amount", 
+        Default = "0.15", 
+        Placeholder = "e.g. 0.15", 
+        Callback = function()end
+    })
+    SPB:SetVisibility(false)
+
+    Settings:Divider()
+
+    local SRT
+    Settings:Toggle({
+        Name = "Resolver", 
+        Flag = "Silent Resolver", 
+        Default = false, 
+        Callback = function(v) 
+            if SRT then SRT:SetVisibility(v) end
+        end
+    })
+    
+    SRT = Settings:Dropdown({
+        Name = "Resolver Type", 
+        Flag = "Silent Resolver Type", 
+        Default = "Velocity", 
+        Items = {"Velocity", "No Prediction"}, 
+        Callback = function()end
+    })
+    SRT:SetVisibility(false)
+
+    Settings:Divider()
+
+    Settings:Toggle({Name = "Target Notifications", Flag = "Silent Notifications", Default = false, Callback = function()end})
+    Settings:Toggle({Name = "Target Indicator", Flag = "Silent Target Indicator", Default = false, Callback = function()end})
+    Settings:Toggle({Name = "Show Target Dot", Flag = "Silent Target Dot", Default = false, Callback = function()end})
+    Settings:Toggle({Name = "Dot Color Depends on Part", Flag = "Silent Dot Dynamic Color", Default = false, Callback = function()end})
+    Settings:Label({Name = "Target Dot Color", Alignment = "Left"}):Colorpicker({
+        Name = "Target Dot Color", 
+        Flag = "Silent Target Dot Color", 
+        Default = Color3.fromRGB(255, 0, 0), 
+        Callback = function()end
+    })
+    
+    Checks:Toggle({Name = "Friend Check", Flag = "Silent Check Friend", Default = false, Callback = function()end})
+    Checks:Toggle({Name = "Knock Check", Flag = "Silent Check Knock", Default = false, Callback = function()end})
+    Checks:Toggle({Name = "Wall Check", Flag = "Silent Check Wall", Default = false, Callback = function()end})
+end
+
+local VisualTab  = Window:Page({Icon = "100050851789190", Subtabs = true})
+local VisualPage = VisualTab:SubPage({Name = "Visual", Columns = 2})
+local WolrdPage  = VisualTab:SubPage({Name = "World", Columns = 2})
+
+do -- Visual
+    local VS = VisualPage:Section({Name = "Visuals", Side = 1})
+    local MS = VisualPage:Section({Name = "Misc", Side = 2})
+
+    VS:Toggle({
+        Name = "Master Switch",
+        Tooltip = "Master toggle for all ESP/visual features in this tab.",
+        Flag = "Visuals Master",
+        Default = false,
+        Callback = function()end
+    })
+
+    -- Box
+    VS:Toggle({Name = "Box", Flag = "Visuals Box", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Box Color", Flag = "Visuals Box Outline Color", Default = Color3.fromRGB(255, 255, 255), Callback = function()end})
+    
+    VS:Toggle({Name = "Box Filled", Flag = "Visuals Box Filled", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Box Filled Color", Flag = "Visuals Box Filled Color", Default = Color3.fromRGB(255, 255, 255), Callback = function()end})
+
+    -- Chams
+    VS:Toggle({Name = "Chams", Flag = "Visuals Chams", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Chams Color", Flag = "Visuals Chams Color", Default = Color3.fromRGB(0, 170, 255), Callback = function()end})
+
+    VS:Toggle({Name = "Vonka.cc Text", Flag = "Visuals FOV Label", Default = false, Callback = function()
+        local state = F("Visuals FOV Label")
+        local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("VonkaFOVLabel")
+        if gui and gui:FindFirstChild("Frame") then
+            gui.Frame.Visible = state
+        end
+    end})
+        :Colorpicker({Name = "Text Color", Flag = "Visuals FOV Label Color", Default = Color3.fromRGB(200, 200, 200), Callback = function(c)
+            local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("VonkaFOVLabel")
+            if gui and gui:FindFirstChild("Frame") then
+                gui.Frame.lblVonka.TextColor3 = c
+            end
+        end})
+
+    -- Labels
+    VS:Toggle({Name = "Name", Flag = "Visuals Name", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Name Color", Flag = "Visuals Name Color", Default = Color3.fromRGB(200, 200, 200), Callback = function()end})
+    
+    VS:Toggle({Name = "Display Name", Flag = "Visuals Display Name", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Display Name Color", Flag = "Visuals Display Name Color", Default = Color3.fromRGB(255, 210, 0), Callback = function()end})
+    
+    VS:Toggle({Name = "Distance", Flag = "Visuals Distance", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Distance Color", Flag = "Visuals Distance Color", Default = Color3.fromRGB(200, 200, 200), Callback = function()end})
+    
+    VS:Toggle({Name = "Tool", Flag = "Visuals Tool", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Tool Color", Flag = "Visuals Tool Color", Default = Color3.fromRGB(255, 210, 0), Callback = function()end})
+
+    -- Health
+    VS:Toggle({Name = "Health Bar", Flag = "Visuals Health Bar", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Health Bar BG", Flag = "Visuals Health Bar BG Color", Default = Color3.fromRGB(255, 0, 0), Callback = function()end})
+    
+    VS:Toggle({Name = "Health Bar Color", Flag = "Visuals Health Bar2", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Health Bar Color", Flag = "Visuals Health Bar Color", Default = Color3.fromRGB(0, 255, 0), Callback = function()end})
+    
+    VS:Toggle({Name = "Health Bar Text", Flag = "Visuals Health Bar Text", Default = false, Callback = function()end})
+        :Colorpicker({Name = "Health Bar Text Color", Flag = "Visuals Health Bar Text Color", Default = Color3.fromRGB(200, 200, 200), Callback = function()end})
+
+    -- Tracers
+    VS:Toggle({
+        Name = "Tracers",
+        Tooltip = "Draws lines from a chosen origin to players.",
+        Flag = "Visuals Tracers",
+        Default = false,
+        Callback = function()end
+    })
+    
+    VS:Dropdown({
+        Name = "Tracer Origin", 
+        Tooltip = "Where tracers start from.\nMouse origin draws from your cursor.",
+        Flag = "Visuals Tracer Origin", 
+        Default = "Bottom", 
+        Items = {"Top", "Middle", "Bottom", "Mouse"}, 
+        Callback = function()end
+    })
+    
+    VS:Label({Name = "Tracer Color", Alignment = "Left"}):Colorpicker({
+        Name = "Tracer Color", 
+        Flag = "Visuals Tracer Color", 
+        Default = Color3.fromRGB(255, 255, 255), 
+        Callback = function()end
+    })
+    
+    VS:Label({Name = "Tracer Outline Color", Alignment = "Left"}):Colorpicker({
+        Name = "Tracer Outline Color", 
+        Flag = "Visuals Tracer Outline Color", 
+        Default = Color3.fromRGB(0, 0, 0), 
+        Callback = function()end
+    })
+    
+    VS:Slider({
+        Name = "Tracer Thickness", 
+        Tooltip = "Thickness of tracer lines.",
+        Flag = "Visuals Tracer Thickness", 
+        Min = 1, 
+        Max = 5, 
+        Default = 1, 
+        Decimals = 1, 
+        Suffix = "px", 
+        Callback = function()end
+    })
+
+    -- Misc
+    
+    MS:Toggle({
+        Name = "Hit Sound",
+        Tooltip = "Plays a sound when your shot registers a hit.",
+        Flag = "Visuals Hit Sound",
+        Default = false,
+        Callback = function()end
+    })
+    
+    MS:Dropdown({
+        Name = "Hit Sound Type", 
+        Tooltip = "Choose which hit sound to play.",
+        Flag = "Visuals Hit Sound Type", 
+        Default = "RIFK7", 
+        Items = {"RIFK7", "Bubble", "Minecraft", "Cod", "Bameware", "Neverlose", "Gamesense", "Rust"}, 
+        Callback = function()end
+    })
+    
+    MS:Slider({
+        Name = "Hit Sound Volume", 
+        Tooltip = "Volume of the hit sound (0 = muted, 1 = loud).",
+        Flag = "Visuals Hit Sound Volume", 
+        Min = 0, 
+        Max = 1, 
+        Default = 0.5, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function()end
+    })
+    
+    MS:Divider()
+    
+    MS:Toggle({
+        Name = "Beam Tracer",
+        Tooltip = "Spawns a beam/trail when shooting (visual effect).",
+        Flag = "Visuals Beam",
+        Default = false,
+        Callback = function()end
+    })
+    
+    MS:Label({Name = "Beam Color", Alignment = "Left"}):Colorpicker({
+        Name = "Beam Color", 
+        Flag = "Visuals Beam Color", 
+        Default = Color3.fromRGB(0, 170, 255), 
+        Callback = function()end
+    })
+    
+    MS:Label({Name = "Beam Color 2", Alignment = "Left"}):Colorpicker({
+        Name = "Beam Color 2", 
+        Flag = "Visuals Beam Color2", 
+        Default = Color3.fromRGB(255, 0, 255), 
+        Callback = function()end
+    })
+    
+    MS:Slider({
+        Name = "Beam Width", 
+        Flag = "Visuals Beam Width", 
+        Min = 0.1, 
+        Max = 5, 
+        Default = 0.5, 
+        Decimals = 0.1, 
+        Suffix = "", 
+        Callback = function()end
+    })
+    
+    MS:Slider({
+        Name = "Beam Duration", 
+        Flag = "Visuals Beam Duration", 
+        Min = 0.1, 
+        Max = 5, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "s", 
+        Callback = function()end
+    })
+    
+    MS:Slider({
+        Name = "Beam Segments", 
+        Flag = "Visuals Beam Segments", 
+        Min = 2, 
+        Max = 20, 
+        Default = 8, 
+        Decimals = 1, 
+        Suffix = "", 
+        Callback = function()end
+    })
+    
+    MS:Divider()
+    
+    MS:Dropdown({
+        Name = "Gun Skin", 
+        Flag = "Visuals Gun Skin", 
+        Default = "Ascension", 
+        Items = {"Void Dragon", "Hell Hound", "Snow Dragon", "Lovestruck", "Adurite", "Ascension", "Hallows", "Candy Cane", "Heartbringer", "Arctic", "Lightbringer", "Deathbringer", "Hell Dragon", "Kitty", "Kirumi", "Shiryus Breath", "Poseidon", "Amethyst", "Arsenic", "Volcanic Ashes", "Floral", "Binary", "Voxel", "Hello Kitty", "Radiation", "Void", "Hexagram", "Strawberry Shortcake", "Black Ice", "Crimson Fangs", "Green Tint", "Ember"}, 
+        Callback = function()end
+    })
+    
+    MS:Dropdown({
+        Name = "Knife Skin", 
+        Flag = "Visuals Knife Skin", 
+        Default = "Beta", 
+        Items = {"Beta", "Fishbone"}, 
+        Callback = function()end
+    })
+end
+
+do -- World Page
+    local FogSection      = WolrdPage:Section({Name = "Fog", Side = 1})
+    local AmbientSection  = WolrdPage:Section({Name = "Ambient", Side = 1})
+    local LightingSection = WolrdPage:Section({Name = "Lighting", Side = 2})
+    local TimeSection     = WolrdPage:Section({Name = "Time & Effects", Side = 2})
+    
+    local Lighting = game:GetService("Lighting")
+    
+    -- Original Values
+    local oFC = Lighting.FogColor
+    local oFS = Lighting.FogStart
+    local oFE = Lighting.FogEnd
+    local oA  = Lighting.Ambient
+    local oOA = Lighting.OutdoorAmbient
+    local oBr = Lighting.Brightness
+    local oEx = Lighting.ExposureCompensation
+    local oSS = Lighting.ShadowSoftness
+    local oCT = Lighting.ClockTime
+    
+    -- States
+    local FogOn, AmbOn, BrOn, ExOn, CCOn, BloomOn, BlurOn, DOFOn, SROn, CTOn, ShOn = false, false, false, false, false, false, false, false, false, false, false
+    
+    -- Custom Values
+    local FCV = Color3.fromRGB(200, 200, 200)
+    local FSV = 0
+    local FEV = 500
+    local AV  = Color3.fromRGB(127, 127, 127)
+    local OAV = Color3.fromRGB(127, 127, 127)
+    local BrV = 2
+    local ExV = 0
+    local TV  = 14
+    local ShV = 0.5
+    
+    local function GE(c) 
+        local e = Lighting:FindFirstChildOfClass(c)
+        if not e then 
+            e = Instance.new(c, Lighting)
+            e.Enabled = false 
+        end
+        return e 
+    end
+    
+    -- Fog
+    FogSection:Toggle({
+        Name = "Enable Fog", 
+        Flag = "World Fog Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            FogOn = v
+            if v then 
+                Lighting.FogColor = FCV
+                Lighting.FogStart = FSV
+                Lighting.FogEnd = FEV 
+            else 
+                Lighting.FogColor = oFC
+                Lighting.FogStart = oFS
+                Lighting.FogEnd = oFE 
+            end 
+        end
+    })
+    
+    FogSection:Label({Name = "Fog Color", Alignment = "Left"}):Colorpicker({
+        Name = "Fog Color", 
+        Flag = "World Fog Color", 
+        Default = Color3.fromRGB(200, 200, 200), 
+        Callback = function(v) 
+            FCV = v
+            if FogOn then Lighting.FogColor = v end 
+        end
+    })
+    
+    FogSection:Slider({
+        Name = "Fog Start", 
+        Flag = "World Fog Start", 
+        Min = 0, 
+        Max = 1000, 
+        Default = 0, 
+        Decimals = 1, 
+        Suffix = " studs", 
+        Callback = function(v) 
+            FSV = v
+            if FogOn then Lighting.FogStart = v end 
+        end
+    })
+    
+    FogSection:Slider({
+        Name = "Fog End", 
+        Flag = "World Fog End", 
+        Min = 0, 
+        Max = 5000, 
+        Default = 500, 
+        Decimals = 1, 
+        Suffix = " studs", 
+        Callback = function(v) 
+            FEV = v
+            if FogOn then Lighting.FogEnd = v end 
+        end
+    })
+    
+    -- Ambient
+    AmbientSection:Toggle({
+        Name = "Custom Ambient", 
+        Flag = "World Ambient Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            AmbOn = v
+            if v then 
+                Lighting.Ambient = AV
+                Lighting.OutdoorAmbient = OAV 
+            else 
+                Lighting.Ambient = oA
+                Lighting.OutdoorAmbient = oOA 
+            end 
+        end
+    })
+    
+    AmbientSection:Label({Name = "Ambient Color", Alignment = "Left"}):Colorpicker({
+        Name = "Ambient Color", 
+        Flag = "World Ambient Color", 
+        Default = Color3.fromRGB(127, 127, 127), 
+        Callback = function(v) 
+            AV = v
+            if AmbOn then Lighting.Ambient = v end 
+        end
+    })
+    
+    AmbientSection:Label({Name = "Outdoor Ambient", Alignment = "Left"}):Colorpicker({
+        Name = "Outdoor Ambient", 
+        Flag = "World Outdoor Ambient", 
+        Default = Color3.fromRGB(127, 127, 127), 
+        Callback = function(v) 
+            OAV = v
+            if AmbOn then Lighting.OutdoorAmbient = v end 
+        end
+    })
+    
+    AmbientSection:Divider()
+    
+    AmbientSection:Toggle({
+        Name = "Remove Sky", 
+        Flag = "World Remove Sky", 
+        Default = false, 
+        Callback = function(v) 
+            if v then 
+                local s = Lighting:FindFirstChildOfClass("Sky")
+                if s then s:Destroy() end 
+            end 
+        end
+    })
+    
+    local SkySection = WolrdPage:Section({Name = "Sky", Side = 1})
+    local SkyOn = false
+    local SkyCC
+    
+    local function GSCC() 
+        if not SkyCC or not SkyCC.Parent then 
+            SkyCC = Instance.new("ColorCorrectionEffect", Lighting)
+            SkyCC.Name = "VonkaSkyCC"
+            SkyCC.Enabled = false 
+        end
+        return SkyCC 
+    end
+    
+    local ST = {
+        ["Default"] = {Color3.fromRGB(255, 255, 255), 0, 0, 0},
+        ["Night"] = {Color3.fromRGB(30, 40, 80), -0.3, 0.1, -0.3},
+        ["Sunset"] = {Color3.fromRGB(255, 140, 60), 0.1, 0.2, 0.3},
+        ["Midnight"] = {Color3.fromRGB(10, 10, 40), -0.5, 0.2, -0.5},
+        ["Overcast"] = {Color3.fromRGB(180, 190, 200), -0.1, 0, -0.2},
+        ["Golden"] = {Color3.fromRGB(255, 200, 80), 0.2, 0.1, 0.4},
+        ["Blood Moon"] = {Color3.fromRGB(180, 20, 20), 0, 0.2, 0.2},
+        ["Arctic"] = {Color3.fromRGB(180, 220, 255), 0.1, -0.1, 0.1},
+        ["Toxic"] = {Color3.fromRGB(80, 255, 80), 0, 0.1, 0.5},
+        ["Void"] = {Color3.fromRGB(5, 5, 5), -0.8, 0.3, -1}
+    }
+    
+    SkySection:Toggle({
+        Name = "Custom Sky Color", 
+        Flag = "World Sky Color On", 
+        Default = false, 
+        Callback = function(v) 
+            SkyOn = v
+            GSCC().Enabled = v 
+        end
+    })
+    
+    SkySection:Label({Name = "Sky Tint", Alignment = "Left"}):Colorpicker({
+        Name = "Sky Tint", 
+        Flag = "World Sky Tint", 
+        Default = Color3.fromRGB(255, 255, 255), 
+        Callback = function(v) 
+            if SkyOn then GSCC().TintColor = v end 
+        end
+    })
+    
+    SkySection:Slider({
+        Name = "Sky Brightness", 
+        Flag = "World Sky Brightness", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if SkyOn then GSCC().Brightness = v end 
+        end
+    })
+    
+    SkySection:Slider({
+        Name = "Sky Saturation", 
+        Flag = "World Sky Saturation", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if SkyOn then GSCC().Saturation = v end 
+        end
+    })
+    
+    SkySection:Slider({
+        Name = "Sky Contrast", 
+        Flag = "World Sky Contrast", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if SkyOn then GSCC().Contrast = v end 
+        end
+    })
+    
+    SkySection:Divider()
+    
+    SkySection:Dropdown({
+        Name = "Sky Theme", 
+        Flag = "World Sky Theme", 
+        Default = "Default", 
+        Items = {"Default", "Night", "Sunset", "Midnight", "Overcast", "Golden", "Blood Moon", "Arctic", "Toxic", "Void"}, 
+        Callback = function(v)
+            local t = ST[v]
+            if not t then return end
+            
+            local cc = GSCC()
+            cc.TintColor = t[1]
+            cc.Brightness = t[2]
+            cc.Contrast = t[3]
+            cc.Saturation = t[4]
+            
+            if not SkyOn then 
+                SkyOn = true
+                cc.Enabled = true 
+            end
+            
+            if v == "Night" or v == "Midnight" then 
+                Lighting.ClockTime = 0 
+            elseif v == "Sunset" or v == "Golden" then 
+                Lighting.ClockTime = 18 
+            elseif v == "Blood Moon" then 
+                Lighting.ClockTime = 2 
+            elseif v == "Default" then 
+                cc.Enabled = false
+                SkyOn = false 
+            end
+        end
+    })
+    
+    local SBSection = WolrdPage:Section({Name = "Custom Skybox", Side = 1})
+    
+    local KSB = {
+        ["Bloxburg Sky"] = "6444884337", 
+        ["Minecraft"] = "1876545003", 
+        ["Space"] = "159454286", 
+        ["Cloudy Day"] = "159454299", 
+        ["Sunset Sky"] = "159454296", 
+        ["Night Stars"] = "159454293", 
+        ["Tropical"] = "159454290", 
+        ["Stormy"] = "159454303"
+    }
+    
+    local CSBID = ""
+    local OrigSky = nil
+    local CustSky = nil
+    
+    do 
+        local s = Lighting:FindFirstChildOfClass("Sky")
+        if s then 
+            OrigSky = {
+                Bk = s.SkyboxBk, 
+                Dn = s.SkyboxDn, 
+                Ft = s.SkyboxFt, 
+                Lf = s.SkyboxLf, 
+                Rt = s.SkyboxRt, 
+                Up = s.SkyboxUp
+            } 
+        end 
+    end
+    
+    local function ApplySky(id) 
+        local t = "rbxassetid://" .. id
+        local s = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky", Lighting)
+        CustSky = s
+        s.SkyboxBk = t
+        s.SkyboxDn = t
+        s.SkyboxFt = t
+        s.SkyboxLf = t
+        s.SkyboxRt = t
+        s.SkyboxUp = t 
+    end
+    
+    local function RestSky() 
+        if CustSky and CustSky.Parent then 
+            if OrigSky then 
+                CustSky.SkyboxBk = OrigSky.Bk
+                CustSky.SkyboxDn = OrigSky.Dn
+                CustSky.SkyboxFt = OrigSky.Ft
+                CustSky.SkyboxLf = OrigSky.Lf
+                CustSky.SkyboxRt = OrigSky.Rt
+                CustSky.SkyboxUp = OrigSky.Up 
+            else 
+                CustSky:Destroy() 
+            end
+            CustSky = nil 
+        end 
+    end
+    
+    SBSection:Dropdown({
+        Name = "Skybox Preset", 
+        Flag = "World Skybox Preset", 
+        Default = "None", 
+        Items = {"None", "Bloxburg Sky", "Anime Sky", "Space", "Cloudy Day", "Sunset Sky", "Night Stars", "Tropical", "Stormy", "Neon City"}, 
+        Callback = function(v) 
+            if v == "None" then 
+                RestSky()
+                return 
+            end
+            local id = KSB[v]
+            if id then ApplySky(id) end 
+        end
+    })
+    
+    SBSection:Divider()
+    
+    SBSection:Textbox({
+        Name = "Skybox Asset ID", 
+        Flag = "World Skybox ID", 
+        Default = "", 
+        Placeholder = "e.g. 159454286", 
+        Callback = function(v) 
+            CSBID = v 
+        end
+    })
+    
+    SBSection:Button({
+        Name = "Apply Skybox ID", 
+        Callback = function() 
+            local id = CSBID:match("%d+")
+            if not id or id == "" then 
+                Library:Notification("Enter a valid asset ID", 3, Color3.fromRGB(255, 80, 80))
+                return 
+            end
+            ApplySky(id)
+            Library:Notification("Applied: " .. id, 2, Color3.fromRGB(0, 255, 0)) 
+        end
+    })
+    
+    SBSection:Button({
+        Name = "Reset Skybox", 
+        Callback = function() 
+            RestSky()
+            Library:Notification("Skybox restored", 2, Color3.fromRGB(255, 255, 255)) 
+        end
+    })
+    
+    -- Lighting 
+    LightingSection:Toggle({
+        Name = "Custom Brightness", 
+        Flag = "World Brightness Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            BrOn = v
+            Lighting.Brightness = v and BrV or oBr 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Brightness", 
+        Flag = "World Brightness", 
+        Min = 0, 
+        Max = 10, 
+        Default = 2, 
+        Decimals = 0.1, 
+        Suffix = "", 
+        Callback = function(v) 
+            BrV = v
+            if BrOn then Lighting.Brightness = v end 
+        end
+    })
+    
+    LightingSection:Toggle({
+        Name = "Custom Exposure", 
+        Flag = "World Exposure Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            ExOn = v
+            Lighting.ExposureCompensation = v and ExV or oEx 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Exposure", 
+        Flag = "World Exposure", 
+        Min = -5, 
+        Max = 5, 
+        Default = 0, 
+        Decimals = 0.1, 
+        Suffix = "", 
+        Callback = function(v) 
+            ExV = v
+            if ExOn then Lighting.ExposureCompensation = v end 
+        end
+    })
+    
+    LightingSection:Divider()
+    
+    LightingSection:Toggle({
+        Name = "Color Correction", 
+        Flag = "World CC Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            CCOn = v
+            GE("ColorCorrectionEffect").Enabled = v 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "CC Brightness", 
+        Flag = "World CC Brightness", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if CCOn then GE("ColorCorrectionEffect").Brightness = v end 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "CC Contrast", 
+        Flag = "World CC Contrast", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if CCOn then GE("ColorCorrectionEffect").Contrast = v end 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "CC Saturation", 
+        Flag = "World CC Saturation", 
+        Min = -1, 
+        Max = 1, 
+        Default = 0, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if CCOn then GE("ColorCorrectionEffect").Saturation = v end 
+        end
+    })
+    
+    LightingSection:Label({Name = "CC Tint", Alignment = "Left"}):Colorpicker({
+        Name = "CC Tint", 
+        Flag = "World CC Tint", 
+        Default = Color3.fromRGB(255, 255, 255), 
+        Callback = function(v) 
+            if CCOn then GE("ColorCorrectionEffect").TintColor = v end 
+        end
+    })
+    
+    LightingSection:Divider()
+    
+    LightingSection:Toggle({
+        Name = "Bloom", 
+        Flag = "World Bloom", 
+        Default = false, 
+        Callback = function(v) 
+            BloomOn = v
+            GE("BloomEffect").Enabled = v 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Bloom Intensity", 
+        Flag = "World Bloom Intensity", 
+        Min = 0, 
+        Max = 1, 
+        Default = 0.9, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if BloomOn then GE("BloomEffect").Intensity = v end 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Bloom Size", 
+        Flag = "World Bloom Size", 
+        Min = 1, 
+        Max = 56, 
+        Default = 24, 
+        Decimals = 1, 
+        Suffix = "", 
+        Callback = function(v) 
+            if BloomOn then GE("BloomEffect").Size = v end 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Bloom Threshold", 
+        Flag = "World Bloom Threshold", 
+        Min = 0, 
+        Max = 2, 
+        Default = 1, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            if BloomOn then GE("BloomEffect").Threshold = v end 
+        end
+    })
+    
+    LightingSection:Divider()
+    
+    LightingSection:Toggle({
+        Name = "Blur", 
+        Flag = "World Blur", 
+        Default = false, 
+        Callback = function(v) 
+            BlurOn = v
+            GE("BlurEffect").Enabled = v 
+        end
+    })
+    
+    LightingSection:Slider({
+        Name = "Blur Size", 
+        Flag = "World Blur Size", 
+        Min = 0, 
+        Max = 56, 
+        Default = 24, 
+        Decimals = 1, 
+        Suffix = "", 
+        Callback = function(v) 
+            if BlurOn then GE("BlurEffect").Size = v end 
+        end
+    })
+    
+    -- Time Section
+    TimeSection:Toggle({
+        Name = "Custom Time", 
+        Flag = "World Custom Time", 
+        Default = false, 
+        Callback = function(v) 
+            CTOn = v
+            Lighting.ClockTime = v and TV or oCT 
+        end
+    })
+    
+    TimeSection:Slider({
+        Name = "Time of Day", 
+        Flag = "World Time", 
+        Min = 0, 
+        Max = 24, 
+        Default = 14, 
+        Decimals = 0.1, 
+        Suffix = "h", 
+        Callback = function(v) 
+            TV = v
+            if CTOn then Lighting.ClockTime = v end 
+        end
+    })
+    
+    TimeSection:Divider()
+    
+    TimeSection:Toggle({
+        Name = "Custom Shadow Softness", 
+        Flag = "World Shadow Enabled", 
+        Default = false, 
+        Callback = function(v) 
+            ShOn = v
+            Lighting.ShadowSoftness = v and ShV or oSS 
+        end
+    })
+    
+    TimeSection:Slider({
+        Name = "Shadow Softness", 
+        Flag = "World Shadow Softness", 
+        Min = 0, 
+        Max = 1, 
+        Default = 0.5, 
+        Decimals = 0.01, 
+        Suffix = "", 
+        Callback = function(v) 
+            ShV = v
+            if ShOn then Lighting.ShadowSoftness = v end 
+        end
+    })
+    
+    TimeSection:Toggle({
+        Name = "Disable Global Shadows", 
+        Flag = "World Global Shadows", 
+        Default = false, 
+        Callback = function(v) 
+            Lighting.GlobalShadows = not v 
+        end
+    })
+end
+
+local PlayersTab  = Window:Page({Icon = "134236649319095", Columns = 2, Subtabs = true})
+local PlayerCharacterPage = PlayersTab:SubPage({Name = "Character", Columns = 2})
+local PlayerMiscPage = PlayersTab:SubPage({Name = "Misc", Columns = 2})
+
+local SettingsTab = Window:Page({Icon = "137300573942266", Columns = 2, Subtabs = false})
+
+do -- Players Tab
+    local MV = PlayerCharacterPage:Section({Name = "Movement", Side = 1})
+    local CharacterMisc = PlayerCharacterPage:Section({Name = "Misc", Side = 2})
+    
+    local MS2 = PlayerMiscPage:Section({Name = "Misc", Side = 1})
+    local ForceSection = PlayerMiscPage:Section({Name = "Force Hit", Side = 1})
+    local VoidSection = PlayerMiscPage:Section({Name = "Void", Side = 2})
+    
+    -- Auto Capsule in Misc Page -> Misc Section
+    MS2:Toggle({Name = "Auto Buy Keys", Flag = "Auto Buy Keys", Default = false, Callback = function()end})
+        :Keybind({Name = "Buy Keys Key", Flag = "Buy Keys Key", Default = Enum.KeyCode.RightAlt, Mode = "Toggle", Callback = function()end})
+
+    MS2:Slider({
+        Name = "Buy Keys Cooldown", 
+        Flag = "Buy Keys Cooldown", 
+        Min = 0.1, 
+        Max = 5, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "s", 
+        Callback = function()end
+    })
+
+    MS2:Divider()
+
+    MS2:Toggle({Name = "Auto Open Capsules", Flag = "Auto Open Capsules", Default = false, Callback = function()end})
+        :Keybind({Name = "Open Capsules Key", Flag = "Open Capsules Key", Default = Enum.KeyCode.RightShift, Mode = "Toggle", Callback = function()end})
+
+    MS2:Slider({
+        Name = "Open Capsules Cooldown", 
+        Flag = "Open Capsules Cooldown", 
+        Min = 0.1, 
+        Max = 5, 
+        Default = 3, 
+        Decimals = 0.1, 
+        Suffix = "s", 
+        Callback = function()end
+    })
+
+    MS2:Divider()
+    
+    MS2:Toggle({Name = "Ping Spoofer", Flag = "Auto Ping Spoofer", Default = false, Callback = function()end})
+    
+    MS2:Slider({
+        Name = "Spoof Speed", 
+        Flag = "Ping Spoofer Speed", 
+        Min = 0.01, 
+        Max = 1, 
+        Default = 0.1, 
+        Decimals = 0.01, 
+        Suffix = "s", 
+        Callback = function()end
+    })
+
+    MS2:Divider()
+
+    MS2:Toggle({Name = "God Mode", Flag = "Misc God Mode", Default = false, Callback = function() end})
+        :Keybind({Name = "God Mode Key", Flag = "Misc God Mode Key", Default = Enum.KeyCode.Delete, Mode = "Toggle", Callback = function() end})
+    
+    MS2:Slider({
+        Name = "Freeze Time",
+        Flag = "Misc God Mode Freeze Time",
+        Min = 0,
+        Max = 1,
+        Default = 0.1265,
+        Decimals = 0.0001,
+        Suffix = "s",
+        Callback = function() end
+    })
+
+    MS2:Divider()
+
+    MS2:Toggle({Name = "Staff Detection", Flag = "Staff Detect Enabled", Default = false, Callback = function()end})
+    MS2:Dropdown({
+        Name = "Staff Action", 
+        Flag = "Staff Detect Action", 
+        Default = "Notification", 
+        Items = {"Notification", "Kick", "Both"}, 
+        Callback = function()end
+    })
+
+    ForceSection:Toggle({Name = "Enable Force", Flag = "Force Enabled", Default = false, Callback = function()end})
+        :Keybind({Name = "Force Key", Flag = "Force Key", Default = Enum.KeyCode.V, Mode = "Toggle", Callback = function()end})
+    
+    ForceSection:Slider({
+        Name = "Force Range", 
+        Flag = "Force Range", 
+        Min = 1, 
+        Max = 1000, 
+        Default = 1000, 
+        Suffix = " studs", 
+        Callback = function()end
+    })
+
+    ForceSection:Slider({
+        Name = "Force Cooldown", 
+        Flag = "Force Cooldown", 
+        Min = 0, 
+        Max = 10, 
+        Default = 0.1, 
+        Decimals = 0.01, 
+        Suffix = "s", 
+        Callback = function()end
+    })
+
+    ForceSection:Dropdown({
+        Name = "Target Part", 
+        Flag = "Force Target Part", 
+        Default = "Head", 
+        Items = {"Head", "HumanoidRootPart"}, 
+        Callback = function()end
+    })
+
+
+    ForceSection:Toggle({Name = "Target Indicator", Flag = "Force Target Indicator", Default = false, Callback = function()end})
+    
+    ForceSection:Toggle({Name = "Target Line", Flag = "Force Target Line", Default = false, Callback = function()end})
+    ForceSection:Label({Name = "Target Line Color", Alignment = "Left"}):Colorpicker({
+        Name = "Target Line Color", 
+        Flag = "Force Target Line Color", 
+        Default = Color3.fromRGB(255, 0, 0), 
+        Callback = function()end
+    })
+
+    ForceSection:Toggle({Name = "Auto Reload", Flag = "Force Auto Reload", Default = false, Callback = function()end})
+    ForceSection:Toggle({Name = "ForceField Check", Flag = "Force FF Check", Default = true, Callback = function()end})
+    ForceSection:Toggle({Name = "Knock Check", Flag = "Force Knock Check", Default = true, Callback = function()end})
+
+    VoidSection:Toggle({Name = "Void", Flag = "Misc Void Spam", Default = false, Callback = function() end})
+        :Keybind({Name = "Void Key", Flag = "Misc Void Spam Key", Default = Enum.KeyCode.Q, Mode = "Toggle", Callback = function() end})
+
+    VoidSection:Dropdown({
+        Name = "Type of Void",
+        Flag = "Misc Void Type",
+        Default = "Void Spam",
+        Items = {"Void Spam", "Void"},
+        Callback = function() end
+    })
+    VoidSection:Toggle({Name = "Show Visuals", Flag = "Misc Void Show Visuals", Default = true, Callback = function() end})
+    VoidSection:Toggle({Name = "Stop on Tool", Flag = "Misc Void Stop on Tool", Default = false, Callback = function() end})
+
+    VoidSection:Dropdown({
+        Name = "Void Mode",
+        Flag = "Misc Void Mode",
+        Default = "Spin",
+        Items = {"Spin", "Random", "Static"},
+        Callback = function() end
+    })
+
+    VoidSection:Slider({
+        Name = "Void Speed",
+        Flag = "Misc Void Speed",
+        Min = 1,
+        Max = 100,
+        Default = 50,
+        Decimals = 1,
+        Suffix = "%",
+        Callback = function() end
+    })
+
+    VoidSection:Slider({
+        Name = "Void Radius",
+        Flag = "Misc Void Radius",
+        Min = 100,
+        Max = 50000,
+        Default = 9999,
+        Decimals = 1,
+        Suffix = " studs",
+        Callback = function() end
+    })
+
+    VoidSection:Slider({
+        Name = "Void Time",
+        Flag = "Misc Void Time",
+        Min = 0.01,
+        Max = 1,
+        Default = 0.05,
+        Decimals = 0.01,
+        Suffix = "s",
+        Callback = function() end
+    })
+
+    VoidSection:Slider({
+        Name = "Normal Time",
+        Flag = "Misc Normal Time",
+        Min = 0.01,
+        Max = 1,
+        Default = 0.05,
+        Decimals = 0.01,
+        Suffix = "s",
+        Callback = function() end
+    })
+
+    -- Speed
+    MV:Toggle({Name = "Speed", Flag = "Move Speed", Default = false, Callback = function()end})
+        :Keybind({Name = "Speed Key", Flag = "Move Speed Key", Default = Enum.KeyCode.Unknown, Mode = "Toggle", Callback = function()end})
+    
+    MV:Slider({
+        Name = "Speed Value", 
+        Flag = "Move Speed Value", 
+        Min = 0, 
+        Max = 100, 
+        Default = 35, 
+        Decimals = 1, 
+        Suffix = "%", 
+        Callback = function()end
+    })
+    
+    MV:Dropdown({
+        Name = "Speed Style", 
+        Flag = "Move Speed Style", 
+        Default = "Normal", 
+        Items = {"Normal", "Bhop", "Minecraft", "Slippery"}, 
+        Callback = function()end
+    })
+    
+    MV:Divider()
+
+    -- Flight
+    MV:Toggle({Name = "Flight", Flag = "Move Flight", Default = false, Callback = function()end})
+        :Keybind({Name = "Flight Key", Flag = "Move Flight Key", Default = Enum.KeyCode.Unknown, Mode = "Hold", Callback = function()end})
+    
+    MV:Slider({
+        Name = "Flight Speed", 
+        Flag = "Move Flight Speed", 
+        Min = 1, 
+        Max = 100, 
+        Default = 35, 
+        Decimals = 1, 
+        Suffix = "%", 
+        Callback = function()end
+    })
+    
+    MV:Divider()
+
+    -- Jump
+    MV:Toggle({Name = "Custom Jump Power", Flag = "Move Jump Power", Default = false, Callback = function()end})
+    
+    MV:Slider({
+        Name = "Jump Power", 
+        Flag = "Move Jump Power Value", 
+        Min = 0, 
+        Max = 1000, 
+        Default = 50, 
+        Decimals = 1, 
+        Suffix = "", 
+        Callback = function()end
+    })
+    
+    MV:Divider()
+
+    -- Other movement
+    MV:Toggle({Name = "Noclip", Flag = "Move Noclip", Default = false, Callback = function()end})
+    MV:Toggle({Name = "Remove Slowdowns", Flag = "Move No Slowdown", Default = false, Callback = function()end})
+    MV:Toggle({Name = "Anti Trip", Flag = "Move Anti Trip", Default = false, Callback = function()end})
+    MV:Toggle({Name = "Anti Sit", Flag = "Move Anti Sit", Default = false, Callback = function()end})
+
+    -- Spinbot
+    CharacterMisc:Toggle({Name = "Spinbot", Flag = "Misc Spinbot", Default = false, Callback = function()end})
+    
+    CharacterMisc:Slider({
+        Name = "Spin Speed", 
+        Flag = "Misc Spinbot Speed", 
+        Min = 1, 
+        Max = 100, 
+        Default = 50, 
+        Decimals = 1, 
+        Suffix = "%", 
+        Callback = function()end
+    })
+    
+    CharacterMisc:Divider()
+
+    -- Animation Player
+    CharacterMisc:Toggle({Name = "Animation Player", Flag = "Misc Anim Player", Default = false, Callback = function()end})
+    
+    CharacterMisc:Dropdown({
+        Name = "Animation", 
+        Flag = "Misc Anim Type", 
+        Default = "Floss", 
+        Items = {"Floss", "Hype", "Custom"}, 
+        Callback = function()
+            if _G.VonkaPlayAnim then _G.VonkaPlayAnim() end
+        end
+    })
+    
+    CharacterMisc:Textbox({
+        Name = "Custom Anim ID", 
+        Flag = "Misc Anim ID", 
+        Default = "", 
+        Placeholder = "e.g. 10714360343", 
+        Callback = function()
+            if _G.VonkaPlayAnim then _G.VonkaPlayAnim() end
+        end
+    })
+
+    CharacterMisc:Slider({
+        Name = "Animation Speed", 
+        Flag = "Misc Anim Speed", 
+        Min = 0, 
+        Max = 10, 
+        Default = 1, 
+        Decimals = 0.1, 
+        Suffix = "x", 
+        Callback = function()
+            if _G.VonkaPlayAnim then _G.VonkaPlayAnim() end
+        end
+    })
+end
+
+do -- Movement + Misc logic
+    local Players   = game:GetService("Players")
+    local RS        = game:GetService("RunService")
+    local UIS       = game:GetService("UserInputService")
+    local LP        = Players.LocalPlayer
+
+    local char, hrp, hum, noclipParts = nil, nil, nil, {}
+    
+    -- Caches the local player's character and humanoid parts for quick access
+    local function cacheNoclipParts(targetChar)
+        table.clear(noclipParts)
+        if not targetChar then return end
+        for _, p in ipairs(targetChar:GetDescendants()) do
+            if p:IsA("BasePart") then
+                noclipParts[#noclipParts + 1] = p
+            end
+        end
+    end
+
+    local function refreshChar()
+        char = LP.Character
+        if not char then return end
+        hrp  = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
+        hum  = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid", 5)
+        cacheNoclipParts(char)
+    end
+    refreshChar()
+    
+    LP.CharacterAdded:Connect(function(c)
+        char = c
+        task.wait(0.1)
+        hrp  = c:FindFirstChild("HumanoidRootPart")
+        hum  = c:FindFirstChildOfClass("Humanoid")
+        cacheNoclipParts(c)
+
+        c.DescendantAdded:Connect(function(d)
+            if d:IsA("BasePart") then
+                noclipParts[#noclipParts + 1] = d
+            end
+        end)
+        c.DescendantRemoving:Connect(function(d)
+            if d:IsA("BasePart") then
+                for i = #noclipParts, 1, -1 do
+                    if noclipParts[i] == d then
+                        table.remove(noclipParts, i)
+                        break
+                    end
+                end
+            end
+        end)
+        
+        -- Re-apply anti-trip/sit on respawn
+        if F("Move Anti Trip") and hum then 
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false) 
+        end
+        if F("Move Anti Sit") and hum then 
+            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false) 
+        end
+    end)
+
+    -- ── SPEED ────────────────────────────────────────────────────────────────
+    local slipperyVel = Vector3.new(0, 0, 0)
+    
+    RS.Heartbeat:Connect(function(dt)
+        if not active("Move Speed", "Move Speed Key") then 
+            slipperyVel = Vector3.new(0, 0, 0)
+            return 
+        end
+        if not hrp or not hum then return end
+        
+        local spd     = (F("Move Speed Value") or 35) * 16
+        local style   = F("Move Speed Style") or "Normal"
+        local dir     = hum.MoveDirection
+        
+        local w = UIS:IsKeyDown(Enum.KeyCode.W)
+        local s = UIS:IsKeyDown(Enum.KeyCode.S)
+        local a = UIS:IsKeyDown(Enum.KeyCode.A)
+        local d = UIS:IsKeyDown(Enum.KeyCode.D)
+        local moving = w or s or a or d
+
+        if style == "Normal" then
+            -- Standard linear speed increase
+            hrp.CFrame += Vector3.new(dir.X, 0, dir.Z) * dt * spd
+            
+        elseif style == "Bhop" then
+            -- Speed increase + automatic jumping when moving
+            hrp.CFrame += Vector3.new(dir.X, 0, dir.Z) * dt * spd
+            if hum:GetState() == Enum.HumanoidStateType.Running and moving then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+            
+        elseif style == "Minecraft" then
+            -- Quick hop simulation
+            hrp.CFrame += Vector3.new(dir.X, 0, dir.Z) * dt * spd
+            if hum:GetState() == Enum.HumanoidStateType.Running and moving then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                hrp.Velocity *= Vector3.new(1, 1.5, 1)
+                task.wait(hum.JumpPower / 500)
+                hrp.Velocity *= Vector3.new(1, -1.1, 1)
+            end
+            
+        elseif style == "Slippery" then
+            -- Ice-skating like momentum
+            local old = hrp.Velocity
+            local grounded = hum:GetState() == Enum.HumanoidStateType.Running
+            if dir.Magnitude > 0 and grounded then
+                slipperyVel = slipperyVel:Lerp(dir * dt * spd * 150, 0.35) * (1 + dt)
+            elseif not grounded then
+                slipperyVel *= (1 - (dt * 4))
+            end
+            hrp.Velocity = Vector3.new(slipperyVel.X, old.Y, slipperyVel.Z)
+        end
+    end)
+
+    -- ── FLIGHT ───────────────────────────────────────────────────────────────
+    local floatVel = Vector3.new(0, math.pi - 2, 0)
+    
+    RS.Heartbeat:Connect(function(dt)
+        if not active("Move Flight", "Move Flight Key") then return end
+        if not hrp or not hum then return end
+        
+        local spd = (F("Move Flight Speed") or 35) * 50
+        local dir = hum.MoveDirection
+        local cam = workspace.CurrentCamera
+        
+        -- Calculate vertical movement based on camera look vector and key presses
+        local upDown = UIS:IsKeyDown(Enum.KeyCode.Space) and 1
+            or (UIS:IsKeyDown(Enum.KeyCode.S) and -cam.CFrame.LookVector.Y
+            or  UIS:IsKeyDown(Enum.KeyCode.W) and  cam.CFrame.LookVector.Y or 0)
+                * math.clamp(dir.Magnitude, 0, 1)
+                
+        hrp.Velocity = floatVel
+        hrp.CFrame += Vector3.new(dir.X, upDown, dir.Z) * dt * spd
+    end)
+
+    -- ── NOCLIP ───────────────────────────────────────────────────────────────
+    RS.Stepped:Connect(function()
+        if not F("Move Noclip") then return end
+        if not char then return end
+        
+        -- Disables collision for cached character parts
+        for i = 1, #noclipParts do
+            local p = noclipParts[i]
+            if p and p.Parent then
+                p.CanCollide = false 
+            end
+        end
+    end)
+
+    -- ── JUMP POWER ───────────────────────────────────────────────────────────
+    RS.Heartbeat:Connect(function()
+        if not hum then return end
+        
+        if F("Move Jump Power") then
+            hum.JumpPower = F("Move Jump Power Value") or 50
+        end
+        
+    end)
+
+    -- ── REMOVE SLOWDOWNS ─────────────────────────────────────────────────────
+    RS.Heartbeat:Connect(function()
+        if not hum then return end
+        -- Prevents walkspeed from dropping below default
+        if F("Move No Slowdown") and hum.WalkSpeed < 16 then
+            hum.WalkSpeed = 16
+        end
+    end)
+
+    -- ── ANTI TRIP ────────────────────────────────────────────────────────────
+    Library.Flags["Move Anti Trip"] = Library.Flags["Move Anti Trip"] or {Value = false}
+    local function applyAntiTrip()
+        if hum then 
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, not F("Move Anti Trip")) 
+        end
+    end
+    RS.Heartbeat:Connect(applyAntiTrip)
+
+    -- ── ANTI SIT ─────────────────────────────────────────────────────────────
+    RS.Heartbeat:Connect(function()
+        if not hum then return end
+        if F("Move Anti Sit") and hum.Sit then
+            task.defer(function() if hum then hum.Sit = false end end)
+        end
+    end)
+
+    -- ── SPINBOT ──────────────────────────────────────────────────────────────
+    RS.Heartbeat:Connect(function(dt)
+        if not active("Misc Spinbot", "Misc Spinbot Key") then
+            if hum then hum.AutoRotate = true end
+            return
+        end
+        if not hrp or not hum then return end
+        hum.AutoRotate = false
+        local spd = (F("Misc Spinbot Speed") or 50) * (1/3)
+        hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(spd), 0)
+    end)
+
+    -- ── VOID SPAM ────────────────────────────────────────────────────────────
+    local void = {
+        enabled = false,
+        client_root = nil,
+        saved_cframe = nil,
+        hook = nil,
+        timer = 0,
+        is_voided = false,
+        angle = 0,
+        radius = 1000, -- Capped for safety
+        spin_speed = 50,
+        speed = 1
+    }
+
+    local function isVectorValid(v)
+        if typeof(v) ~= "Vector3" then return false end
+        return v.X == v.X and v.Y == v.Y and v.Z == v.Z and 
+               v.X ~= math.huge and v.X ~= -math.huge and
+               v.Y ~= math.huge and v.Y ~= -math.huge and
+               v.Z ~= math.huge and v.Z ~= -math.huge
+    end
+
+    local function getSpoofState()
+        if void.enabled and void.saved_cframe and void.client_root and void.client_root.Parent then
+            return void
+        end
+    end
+
+    local function enable_hook()
+        if not void.hook and type(hookmetamethod) == "function" and type(checkcaller) == "function" then
+            local original
+            local ok, result = pcall(function()
+                original = hookmetamethod(game, "__index", function(self, index)
+                    if not checkcaller() and index == "CFrame" then
+                        local spoofState = getSpoofState()
+                        if spoofState and self == spoofState.client_root then
+                            local saved = spoofState.saved_cframe
+                            if saved then return saved end
+                        end
+                    end
+                    return original(self, index)
+                end)
+                return original
+            end)
+            if ok and result then
+                void.hook = result
+            end
+        end
+    end
+
+    local function disable_hook()
+        -- Leaving the hook active to avoid unhookmetamethod crashes.
+        -- The logic inside enable_hook already respects getSpoofState().
+    end
+
+    local NUM_LINES = 30
+    local lines = {}
+    local coreLine = makeDrawing("Line")
+    local arrowLeft = makeDrawing("Line")
+    local arrowRight = makeDrawing("Line")
+    local trailHistory = {}
+
+    local function setupDrawings()
+        for i = 1, NUM_LINES do
+            local l = makeDrawing("Line")
+            l.Visible = false
+            local t = i / NUM_LINES
+            l.Color = Color3.fromRGB(255, math.floor(t * 180), math.floor(t * 20))
+            l.Thickness = math.max(0.5, (1 - t) * 4)
+            l.Transparency = 1 - (1 - t) * 0.9
+            table.insert(lines, l)
+        end
+
+        coreLine.Visible = false
+        coreLine.Color = Color3.fromRGB(255, 255, 255)
+        coreLine.Thickness = 1
+        coreLine.Transparency = 1
+
+        arrowLeft.Visible = false
+        arrowLeft.Color = Color3.fromRGB(255, 255, 255)
+        arrowLeft.Thickness = 1.5
+        arrowLeft.Transparency = 1
+
+        arrowRight.Visible = false
+        arrowRight.Color = Color3.fromRGB(255, 255, 255)
+        arrowRight.Thickness = 1.5
+        arrowRight.Transparency = 1
+
+        for i = 1, NUM_LINES + 1 do
+            trailHistory[i] = Vector2.new(0, 0)
+        end
+    end
+    setupDrawings()
+
+    local function cleanDrawings()
+        for _, l in ipairs(lines) do
+            l.Visible = false
+        end
+        coreLine.Visible = false
+        arrowLeft.Visible = false
+        arrowRight.Visible = false
+        for i = 1, #trailHistory do
+            trailHistory[i] = Vector2.new(0, 0)
+        end
+    end
+
+    local function updateLines(fromPos, toPos)
+        local cam = workspace.CurrentCamera
+        local toScreen, toVis = cam:WorldToViewportPoint(toPos)
+        local fromScreen, fromVis = cam:WorldToViewportPoint(fromPos)
+
+        if not fromVis then
+            cleanDrawings()
+            return
+        end
+
+        local headPos = Vector2.new(toScreen.X, toScreen.Y)
+        local originPos = Vector2.new(fromScreen.X, fromScreen.Y)
+
+        table.insert(trailHistory, 1, headPos)
+        if #trailHistory > NUM_LINES + 1 then
+            table.remove(trailHistory)
+        end
+
+        for i = 1, NUM_LINES do
+            local l = lines[i]
+            if trailHistory[i] and trailHistory[i + 1] then
+                l.From = trailHistory[i + 1]
+                l.To = trailHistory[i]
+                l.Visible = true
+            end
+        end
+
+        coreLine.From = trailHistory[2] or headPos
+        coreLine.To = headPos
+        coreLine.Visible = true
+
+        local dir = headPos - originPos
+        local len = dir.Magnitude
+        if len > 1 then
+            dir = dir / len
+            local perp = Vector2.new(-dir.Y, dir.X)
+            local arrowSize = 12
+            arrowLeft.From = headPos
+            arrowLeft.To = headPos - dir * arrowSize + perp * (arrowSize * 0.5)
+            arrowLeft.Visible = true
+            arrowRight.From = headPos
+            arrowRight.To = headPos - dir * arrowSize - perp * (arrowSize * 0.5)
+            arrowRight.Visible = true
+        end
+    end
+
+    local function getSpinTarget()
+        if not void.saved_cframe then return Vector3.new(0, 0, 0) end
+        local a = void.angle
+        local r = void.radius
+        local mode = F("Misc Void Mode") or "Spin"
+        local basePos = void.saved_cframe.Position
+        
+        local target
+        if mode == "Spin" then
+            local x = basePos.X + r * math.sin(a) * math.cos(a * 0.7)
+            local y = basePos.Y + r * math.sin(a * 1.3)
+            local z = basePos.Z + r * math.cos(a) * math.sin(a * 0.5)
+            target = Vector3.new(x, y, z)
+        elseif mode == "Random" then
+            target = basePos + Vector3.new(math.random(-r, r), math.random(-r, r), math.random(-r, r))
+        elseif mode == "Static" then
+            target = basePos + Vector3.new(0, r, 0)
+        else
+            target = basePos
+        end
+        return isVectorValid(target) and target or basePos
+    end
+
+    RS.Heartbeat:Connect(function(delta)
+        void.enabled = active("Misc Void Spam", "Misc Void Spam Key")
+        void.client_root = hrp
+        
+        if not void.client_root then return end
+
+        local toolEquipped = char and char:FindFirstChildOfClass("Tool")
+        local stopOnTool = F("Misc Void Stop on Tool")
+
+        if void.enabled and not (stopOnTool and toolEquipped) then
+            enable_hook()
+
+            void.spin_speed = (F("Misc Void Speed") or 50)
+            void.radius = math.clamp(F("Misc Void Radius") or 1000, 0, 1000)
+            void.angle = (void.angle + (delta * void.spin_speed * void.speed)) % (math.pi * 2)
+            void.timer = void.timer + (delta * void.speed)
+
+            local voidType = F("Misc Void Type") or "Void Spam"
+            local void_time = F("Misc Void Time") or 0.05
+            local normal_time = F("Misc Normal Time") or 0.05
+            local threshold = void.is_voided and void_time or normal_time
+
+            if voidType == "Void Spam" then
+                if void.timer >= threshold then
+                    void.timer = 0
+                    void.is_voided = not void.is_voided
+                end
+            else
+                void.is_voided = true
+            end
+
+            void.saved_cframe = void.client_root.CFrame
+            local currentTarget = getSpinTarget()
+
+            local target_cframe = (void.is_voided and isVectorValid(currentTarget))
+                and CFrame.new(currentTarget)
+                or void.saved_cframe
+
+            void.client_root.CFrame = target_cframe
+
+            if void.is_voided and F("Misc Void Show Visuals") then
+                pcall(function() updateLines(void.saved_cframe.Position, currentTarget) end)
+            else
+                pcall(cleanDrawings)
+            end
+
+            local restoreRoot = void.client_root
+            local restoreCFrame = void.saved_cframe
+            task.defer(function()
+                if restoreRoot and restoreCFrame and restoreRoot.Parent then
+                    pcall(function()
+                        restoreRoot.CFrame = restoreCFrame
+                    end)
+                end
+            end)
+        else
+            void.saved_cframe = nil
+            if not getSpoofState() then
+                disable_hook()
+            end
+            cleanDrawings()
+        end
+    end)
+
+    local ANIM_IDS = {
+        Floss = "10714340543", 
+        Hype = "10714369624"
+    }
+    local animObj, loadedAnim, currentTrack
+
+    -- Stops any currently playing custom animations
+    local function stopAnim()
+        if currentTrack then pcall(function() currentTrack:Stop() end); currentTrack = nil end
+        if loadedAnim   then pcall(function() loadedAnim:Stop() end);   loadedAnim = nil end
+        if animObj      then pcall(function() animObj:Destroy() end);   animObj = nil end
+    end
+
+    -- Loads and plays a custom animation on the player's character
+    local function playAnim()
+        if not F("Misc Anim Player") then 
+            stopAnim() 
+            return 
+        end
+        
+        stopAnim()
+        local animType = F("Misc Anim Type") or "Chibi"
+        local id
+        
+        if animType == "Custom" then
+            local raw = tostring(F("Misc Anim ID") or "")
+            id = raw:match("%d+")
+            if not id or id == "" then return end
+        else
+            id = ANIM_IDS[animType] or ANIM_IDS.Chibi
+        end
+        
+        task.spawn(function()
+            local c = LP.Character
+            if not c then return end
+            
+            local h = c:FindFirstChildOfClass("Humanoid")
+            if not h or h.Health <= 0 then return end
+            
+            -- Use Animator if possible (standard way for modern Roblox)
+            local a = h:FindFirstChildOfClass("Animator") or Instance.new("Animator", h)
+            
+            local newAnim = Instance.new("Animation")
+            newAnim.AnimationId = "rbxassetid://" .. id
+            newAnim.Parent = h
+            animObj = newAnim
+            
+            local ok, track = pcall(function() return a:LoadAnimation(newAnim) end)
+            if not ok or not track then return end
+            
+            -- Final check before playing in case toggle was disabled during load
+            if not F("Misc Anim Player") then 
+                track:Destroy()
+                return 
+            end
+            
+            stopAnim()
+            currentTrack = track
+            currentTrack.Looped = true
+            currentTrack:Play()
+            currentTrack:AdjustSpeed(F("Misc Anim Speed") or 1)
+        end)
+    end
+
+    local lastAnimState = false
+    _G.VonkaPlayAnim = playAnim
+    
+    RS.Heartbeat:Connect(function()
+        local on = F("Misc Anim Player") and true or false
+        if on ~= lastAnimState then
+            lastAnimState = on
+            if on then playAnim() else stopAnim() end
+        end
+    end)
+    
+    -- Re-play animation after respawn without resetting the toggle
+    local lastRespawnAnim = 0
+    LP.CharacterAdded:Connect(function(c)
+        char = c
+        hrp  = c:WaitForChild("HumanoidRootPart", 10)
+        hum  = c:WaitForChild("Humanoid", 10)
+        
+        -- Wait until appearance is loaded to be safe before playing animations
+        if not LP:HasAppearanceLoaded() then LP.CharacterAppearanceLoaded:Wait() end
+        
+        if F("Misc Anim Player") and tick() - lastRespawnAnim > 2 then
+            lastRespawnAnim = tick()
+            task.wait(1) -- Small buffer to let the character initialize
+            pcall(function() playAnim() end)
+        end
+    end)
+
+    -- ── GOD MODE ─────────────────────────────────────────────────────────────
+    local godTrack, godHeartbeat, godAnimConn
+    local godActive = false
+    local godEmoteId = "rbxassetid://70883871260184"
+
+    local function cleanupGodMode()
+        if godTrack then pcall(function() godTrack:Stop(); godTrack:Destroy() end); godTrack = nil end
+        if godHeartbeat then godHeartbeat:Disconnect(); godHeartbeat = nil end
+        if godAnimConn then godAnimConn:Disconnect(); godAnimConn = nil end
+    end
+
+    local function startGodMode()
+        if not hum then return end
+        cleanupGodMode()
+
+        local anim = Instance.new("Animation")
+        anim.AnimationId = godEmoteId
+        
+        local ok, track = pcall(function() return hum:LoadAnimation(anim) end)
+        if not ok or not track then return end
+        
+        godTrack = track
+        godTrack:Play(0, 1, 1)
+
+        godHeartbeat = RS.Heartbeat:Connect(function()
+            if godTrack and godActive then
+                local freezePos = F("Misc God Mode Freeze Time")
+                godTrack.TimePosition = (type(freezePos) == "number" and freezePos or 0.1265)
+                godTrack:AdjustSpeed(0)
+            end
+        end)
+
+        godAnimConn = hum.AnimationPlayed:Connect(function(newtrack)
+            if godActive and godTrack and newtrack ~= godTrack then
+                task.delay(0.02 + math.random() * 0.03, function()
+                    if godActive then startGodMode() end
+                end)
+            end
+        end)
+    end
+
+    RS.Heartbeat:Connect(function()
+        local isEnabled = active("Misc God Mode", "Misc God Mode Key")
+        if isEnabled ~= godActive then
+            godActive = isEnabled
+            if godActive then
+                startGodMode()
+            else
+                cleanupGodMode()
+            end
+        end
+    end)
+
+    LP.CharacterAdded:Connect(function(c)
+        task.wait(0.25)
+        if godActive then startGodMode() end
+    end)
+end
+
+do -- Indicator UI Logic
+    local coreGui = game:GetService("CoreGui")
+    local existingGui = coreGui:FindFirstChild("VonkaTargetIndicator")
+    if existingGui then
+        existingGui:Destroy()
+    end
+
+    local indicatorGui = Instance.new("ScreenGui")
+    indicatorGui.Name = "VonkaTargetIndicator"
+    indicatorGui.ResetOnSpawn = false
+    indicatorGui.IgnoreGuiInset = true
+    indicatorGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    indicatorGui.Parent = coreGui
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 380, 0, 180)
+    mainFrame.Position = UDim2.new(0.5, 205, 0.5, -60)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    mainFrame.BorderColor3 = Color3.fromRGB(10, 10, 10)
+    mainFrame.BorderSizePixel = 1
+    mainFrame.Visible = false
+    mainFrame.Active = true
+    mainFrame.Parent = indicatorGui
+
+    local mainOutline = Instance.new("UIStroke")
+    mainOutline.Color = Color3.fromRGB(255, 0, 0)
+    mainOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    mainOutline.Thickness = 1
+    mainOutline.Parent = mainFrame
+
+    local innerBG = Instance.new("Frame")
+    innerBG.Size = UDim2.new(1, -12, 1, -12)
+    innerBG.Position = UDim2.new(0, 6, 0, 6)
+    innerBG.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    innerBG.BorderColor3 = Color3.fromRGB(10, 10, 10)
+    innerBG.BorderSizePixel = 1
+    innerBG.Parent = mainFrame
+
+    local innerOutline = Instance.new("UIStroke")
+    innerOutline.Color = Color3.fromRGB(27, 27, 32)
+    innerOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    innerOutline.Thickness = 1
+    innerOutline.Parent = innerBG
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 20)
+    title.Position = UDim2.new(0, 10, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "Indicator"
+    title.TextColor3 = Color3.fromRGB(180, 180, 180)
+    title.TextSize = 13
+    title.Font = Enum.Font.Code
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = innerBG
+
+    local panel = Instance.new("Frame")
+    panel.Size = UDim2.new(1, -20, 1, -30)
+    panel.Position = UDim2.new(0, 10, 0, 20)
+    panel.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    panel.BorderColor3 = Color3.fromRGB(10, 10, 10)
+    panel.BorderSizePixel = 1
+    panel.Parent = innerBG
+
+    local panelOutline = Instance.new("UIStroke")
+    panelOutline.Color = Color3.fromRGB(27, 27, 32)
+    panelOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    panelOutline.Thickness = 1
+    panelOutline.Parent = panel
+
+    local panelTopAccent = Instance.new("Frame")
+    panelTopAccent.Size = UDim2.new(1, 0, 0, 1)
+    panelTopAccent.Position = UDim2.new(0, 0, 0, 0)
+    panelTopAccent.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    panelTopAccent.BorderSizePixel = 0
+    panelTopAccent.Parent = panel
+
+    local infoLabel = Instance.new("TextLabel")
+    infoLabel.Size = UDim2.new(1, -20, 0, 20)
+    infoLabel.Position = UDim2.new(0, 10, 0, 2)
+    infoLabel.BackgroundTransparency = 1
+    infoLabel.Text = "Info"
+    infoLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    infoLabel.TextSize = 13
+    infoLabel.Font = Enum.Font.Code
+    infoLabel.TextXAlignment = Enum.TextXAlignment.Left
+    infoLabel.Parent = panel
+
+    local avatarBG = Instance.new("Frame")
+    avatarBG.Size = UDim2.new(0, 90, 0, 90)
+    avatarBG.Position = UDim2.new(0, 10, 0, 26)
+    avatarBG.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    avatarBG.BorderColor3 = Color3.fromRGB(10, 10, 10)
+    avatarBG.BorderSizePixel = 1
+    avatarBG.Parent = panel
+
+    local avatarOutline = Instance.new("UIStroke")
+    avatarOutline.Color = Color3.fromRGB(27, 27, 32)
+    avatarOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    avatarOutline.Parent = avatarBG
+
+    local avatar = Instance.new("ImageLabel")
+    avatar.Size = UDim2.new(1, -4, 1, -4)
+    avatar.Position = UDim2.new(0, 2, 0, 2)
+    avatar.BackgroundTransparency = 1
+    avatar.Parent = avatarBG
+
+    local function makeRow(name, yPos)
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(0, 100, 0, 18)
+        label.Position = UDim2.new(0, 110, 0, yPos)
+        label.BackgroundTransparency = 1
+        label.Text = name .. ":"
+        label.TextColor3 = Color3.fromRGB(215, 215, 215)
+        label.TextSize = 13
+        label.Font = Enum.Font.Code
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Parent = panel
+
+        local value = Instance.new("TextLabel")
+        value.Size = UDim2.new(1, -120, 0, 18)
+        value.Position = UDim2.new(0, 110, 0, yPos)
+        value.BackgroundTransparency = 1
+        value.Text = "None"
+        value.TextColor3 = Color3.fromRGB(215, 215, 215)
+        value.TextSize = 13
+        value.Font = Enum.Font.Code
+        value.TextXAlignment = Enum.TextXAlignment.Right
+        value.Parent = panel
+        return value
+    end
+
+    local nameVal = makeRow("Name", 26)
+    local displayVal = makeRow("Display Name", 44)
+    local toolVal = makeRow("Tool", 62)
+    local distVal = makeRow("Distance", 80)
+
+    local hpBG = Instance.new("Frame")
+    hpBG.Size = UDim2.new(1, -120, 0, 12)
+    hpBG.Position = UDim2.new(0, 110, 0, 104)
+    hpBG.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    hpBG.BorderColor3 = Color3.fromRGB(10, 10, 10)
+    hpBG.BorderSizePixel = 1
+    hpBG.Parent = panel
+
+    local hpOutline = Instance.new("UIStroke")
+    hpOutline.Color = Color3.fromRGB(27, 27, 32)
+    hpOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    hpOutline.Parent = hpBG
+
+    local hpFill = Instance.new("Frame")
+    hpFill.Size = UDim2.new(0, 0, 1, 0)
+    hpFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    hpFill.BorderSizePixel = 0
+    hpFill.Parent = hpBG
+
+    local hpGradient = Instance.new("UIGradient")
+    hpGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 0, 0))
+    })
+    hpGradient.Rotation = 0
+    hpGradient.Parent = hpFill
+
+    local hpText = Instance.new("TextLabel")
+    hpText.Size = UDim2.new(1, 0, 1, 0)
+    hpText.BackgroundTransparency = 1
+    hpText.Text = "0/100"
+    hpText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    hpText.TextSize = 10
+    hpText.Font = Enum.Font.Code
+    hpText.ZIndex = 2
+    hpText.Parent = hpBG
+
+    local dragging, dragStart, startPos, dragConn
+    mainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+
+            if dragConn then
+                dragConn:Disconnect()
+            end
+
+            dragConn = game:GetService("UserInputService").InputChanged:Connect(function(changedInput)
+                if dragging and changedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                    local delta = changedInput.Position - dragStart
+                    mainFrame.Position = UDim2.new(
+                        startPos.X.Scale, startPos.X.Offset + delta.X,
+                        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+                    )
+                end
+            end)
+        end
+    end)
+    mainFrame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+
+            if dragConn then
+                dragConn:Disconnect()
+                dragConn = nil
+            end
+        end
+    end)
+
+    _G.VonkaIndicatorUI = {
+        Frame = mainFrame,
+        Avatar = avatar,
+        Name = nameVal,
+        Display = displayVal,
+        Tool = toolVal,
+        Dist = distVal,
+        HpFill = hpFill,
+        HpText = hpText
+    }
+
+    _G.VonkaIndicatorUI.Update = function(targetPlayer, isEnabled)
+        local ui = _G.VonkaIndicatorUI
+        if not ui then return end
+        
+        if not isEnabled or not targetPlayer then
+            ui.Frame.Visible = false
+            return
+        end
+
+        ui.Frame.Visible = true
+
+        local char = targetPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local LP = game:GetService("Players").LocalPlayer
+        local myHrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+
+        ui.Name.Text = targetPlayer.Name
+        ui.Display.Text = targetPlayer.DisplayName
+        
+        -- Get Avatar
+        task.spawn(function()
+            pcall(function()
+                local content, isReady = game:GetService("Players"):GetUserThumbnailAsync(targetPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+                if isReady and ui.Name.Text == targetPlayer.Name then
+                    ui.Avatar.Image = content
+                end
+            end)
+        end)
+
+        -- Tool
+        local tool = char and char:FindFirstChildOfClass("Tool")
+        ui.Tool.Text = tool and tool.Name or "None"
+
+        -- Distance
+        if hrp and myHrp then
+            local dist = math.floor((hrp.Position - myHrp.Position).Magnitude)
+            ui.Dist.Text = tostring(dist) .. "m"
+        else
+            ui.Dist.Text = "0m"
+        end
+
+        -- Health
+        if hum then
+            local hp = math.floor(hum.Health)
+            local maxHp = math.floor(hum.MaxHealth)
+            local pct = math.clamp(hp / maxHp, 0, 1)
+            ui.HpFill.Size = UDim2.new(pct, 0, 1, 0)
+            ui.HpText.Text = tostring(hp) .. "/" .. tostring(maxHp)
+        else
+            ui.HpFill.Size = UDim2.new(0, 0, 1, 0)
+            ui.HpText.Text = "0/100"
+        end
+    end
+end
+
+
+do -- Legit / Aimbot Logic
+    local Players = game:GetService("Players")
+    local RS      = game:GetService("RunService")
+    local UIS     = game:GetService("UserInputService")
+    local LP      = Players.LocalPlayer
+    local Cam     = workspace.CurrentCamera
+
+    -- Abstraction for different executors
+    local function mouse_move(x, y)
+        if type(mousemoverel) == "function" then
+            return mousemoverel(x, y)
+        end
+        if Input and type(Input.MouseMove) == "function" then
+            return Input.MouseMove(x, y)
+        end
+        if Input and type(Input.MoveMouse) == "function" then
+            return Input.MoveMouse(x, y)
+        end
+    end
+
+    local FOV_Drawings = {
+        Circle = makeDrawing("Circle"),
+        Square = makeDrawing("Square"),
+        Dotted = {} -- for dotted circle
+    }
+    
+    for i = 1, 60 do
+        local d = makeDrawing("Line")
+        d.Visible = false
+        d.Thickness = 1
+        table.insert(FOV_Drawings.Dotted, d)
+    end
+
+    FOV_Drawings.Circle.Visible = false
+    FOV_Drawings.Circle.ZIndex = 5
+    FOV_Drawings.Circle.Filled = false
+
+    FOV_Drawings.Square.Visible = false
+    FOV_Drawings.Square.ZIndex = 5
+    FOV_Drawings.Square.Filled = false
+
+    local currentTarget = nil
+    local fovRotation = 0
+
+    local function isTargetValid(v, isCurrentTarget)
+        if not v or not v.Character then return false end
+        local char = v.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not hrp or hum.Health <= 0 then return false end
+        
+        -- Checks
+        if F("Check Friend") and v.Team == LP.Team then return false end
+        
+        -- Knock Check
+        if F("Check Knock") then
+            if char:FindFirstChild("BodyEffects") and char.BodyEffects:FindFirstChild("K.O") and char.BodyEffects["K.O"].Value then return false end
+            if char:FindFirstChild("KO") and char.KO.Value then return false end
+        end
+
+        local targetPart = char:FindFirstChild(F("Aimbot Part") or "Head")
+        if not targetPart then return false end
+
+        local screenPos, onScreen = Cam:WorldToViewportPoint(targetPart.Position)
+        
+        -- If it's a new target, they MUST be on screen.
+        -- If they are already our sticky target, we allow them to go off-screen.
+        if not isCurrentTarget and not onScreen then return false end
+
+        -- Wall Check
+        if F("Check Wall") then
+            local ray = Ray.new(Cam.CFrame.Position, (targetPart.Position - Cam.CFrame.Position).Unit * 500)
+            local hit = workspace:FindPartOnRayWithIgnoreList(ray, {LP.Character, char})
+            if hit then return false end
+        end
+
+        -- FOV Check
+        -- If it's already the current sticky target, don't drop them just because they left the tiny FOV circle,
+        -- as long as they are still on screen.
+        if not isCurrentTarget then
+            local mousePos = UIS:GetMouseLocation()
+            local mag = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+            if mag > (F("Aimbot FOV") or 120) then return false end
+        end
+
+        return true
+    end
+
+    local function getClosestPlayer()
+        if F("Aimbot Sticky") and currentTarget and isTargetValid(currentTarget, true) then
+            return currentTarget
+        end
+
+        local target = nil
+        local bestValue = math.huge
+        local mousePos = UIS:GetMouseLocation()
+        local method = F("Aimbot Target Method") or "Closest to Mouse"
+
+        for _, v in ipairs(Players:GetPlayers()) do
+            if v == LP then continue end
+            if isTargetValid(v, false) then
+                local char = v.Character
+                local targetPart = char:FindFirstChild(F("Aimbot Part") or "Head")
+                local screenPos, _ = Cam:WorldToViewportPoint(targetPart.Position)
+                local mag = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                
+                local currentValue = math.huge
+                
+                if method == "Closest to Mouse" then
+                    currentValue = mag
+                else
+                    -- "FOV" method: essentially the same as "Closest to Mouse" 
+                    -- but could be prioritized differently if needed.
+                    -- In Da Hood, "FOV" usually just means "First target found inside the circle" 
+                    -- or "Closest to crosshair". Let's stick to magnitude for stability.
+                    currentValue = mag
+                end
+
+                if currentValue < bestValue then
+                    bestValue = currentValue
+                    target = v
+                end
+            end
+        end
+        return target
+    end
+
+    local function getTargetPos(player)
+        local char = player.Character
+        local targetPart = char:FindFirstChild(F("Aimbot Part") or "Head")
+        if not targetPart then return nil end
+
+        local pos = targetPart.Position
+        local vel = targetPart.Velocity
+
+        -- Resolver Methods
+        if F("Aimbot Resolver") then
+            local resType = F("Aimbot Resolver Type") or "Velocity"
+            
+            if resType == "Velocity" then
+                -- Stabilizes Y axis if they are jumping/falling too fast or spinning
+                if vel.Magnitude > 50 or math.abs(vel.Y) > 25 then
+                    vel = Vector3.new(vel.X, 0, vel.Z).Unit * 15 
+                end
+            elseif resType == "No Prediction" then
+                -- Force zero velocity to completely ignore their movement
+                vel = Vector3.new(0, 0, 0)
+            end
+        end
+
+        -- Prediction
+        if F("Aimbot Prediction") then
+            local pred = tonumber(F("Aimbot Prediction Amount")) or 0.15
+            pos = pos + (vel * pred)
+        end
+
+        return pos
+    end
+
+    local function getSmoothAmount(baseAmount, smoothType)
+        if baseAmount >= 1 then return 1 end -- 100% means instant snap
+
+        if smoothType == "Linear" then
+            return baseAmount
+        elseif smoothType == "Exponential" then
+            return baseAmount ^ 2
+        elseif smoothType == "Quadratic" then
+            return baseAmount * (2 - baseAmount)
+        elseif smoothType == "Cubic" then
+            return baseAmount ^ 3
+        elseif smoothType == "Sine" then
+            return math.sin(baseAmount * (math.pi / 2))
+        elseif smoothType == "Elastic" then
+            return math.sin(-13 * math.pi / 2 * (baseAmount + 1)) * math.pow(2, -10 * baseAmount) + 1
+        elseif smoothType == "Spring" then
+            return 1 - math.exp(-baseAmount * 10) * math.cos(baseAmount * 10)
+        end
+        return baseAmount
+    end
+
+    local function rotateCamera(pos)
+        local type = F("Aimbot Type") or "Camera"
+        local smooth = F("Aimbot Smooth")
+        local baseAmount = (F("Aimbot Smooth Amount") or 20) / 100
+        local smoothType = F("Aimbot Smooth Type") or "Exponential"
+
+        local finalAmount = smooth and getSmoothAmount(baseAmount, smoothType) or 1
+
+        if type == "Camera" then
+            local targetCF = CFrame.new(Cam.CFrame.Position, pos)
+            if smooth then
+                Cam.CFrame = Cam.CFrame:Lerp(targetCF, finalAmount)
+            else
+                Cam.CFrame = targetCF
+            end
+        else
+            -- Mouse Aimbot
+            local screenPos, onScreen = Cam:WorldToViewportPoint(pos)
+            if onScreen then
+                local mousePos = UIS:GetMouseLocation()
+                local move = Vector2.new(screenPos.X - mousePos.X, screenPos.Y - mousePos.Y)
+                if smooth then
+                    mouse_move(move.X * finalAmount, move.Y * finalAmount)
+                else
+                    mouse_move(move.X, move.Y)
+                end
+            end
+        end
+    end
+
+    local lastAimTarget = nil
+
+    RS.RenderStepped:Connect(function(dt)
+        -- Update FOV Visuals
+        local fovEnabled = F("Aimbot FOV Visible")
+        local fovShape = F("Aimbot FOV Shape") or "Circle"
+        local fovRadius = F("Aimbot FOV") or 120
+        local mousePos = UIS:GetMouseLocation()
+        
+        -- Animation Logic
+        if F("Aimbot FOV Rainbow") then
+            local speed = F("Aimbot FOV Rainbow Speed") or 1
+            local color = Color3.fromHSV(tick() * speed % 1, 0.8, 1)
+            FOV_Drawings.Circle.Color = color
+            FOV_Drawings.Square.Color = color
+            for _, d in ipairs(FOV_Drawings.Dotted) do d.Color = color end
+        else
+            local color = F("Aimbot FOV Color") or Color3.fromRGB(255, 0, 0)
+            FOV_Drawings.Circle.Color = color
+            FOV_Drawings.Square.Color = color
+            for _, d in ipairs(FOV_Drawings.Dotted) do d.Color = color end
+        end
+
+        if F("Aimbot FOV Spin") then
+            fovRotation = fovRotation + (F("Aimbot FOV Spin Speed") or 90) * dt
+        end
+
+        -- Visibility cleanup
+        FOV_Drawings.Circle.Visible = fovEnabled and (fovShape == "Circle")
+        FOV_Drawings.Square.Visible = fovEnabled and (fovShape == "Square")
+        for _, d in ipairs(FOV_Drawings.Dotted) do d.Visible = false end
+
+        if fovEnabled then
+            if fovShape == "Circle" then
+                FOV_Drawings.Circle.Radius = fovRadius
+                FOV_Drawings.Circle.Position = mousePos
+                FOV_Drawings.Circle.Thickness = F("Aimbot FOV Thickness") or 1
+            elseif fovShape == "Square" then
+                FOV_Drawings.Square.Size = Vector2.new(fovRadius * 2, fovRadius * 2)
+                FOV_Drawings.Square.Position = mousePos - Vector2.new(fovRadius, fovRadius)
+                FOV_Drawings.Square.Thickness = F("Aimbot FOV Thickness") or 1
+            elseif fovShape == "Dotted Circle" then
+                local numDots = #FOV_Drawings.Dotted
+                for i = 1, numDots do
+                    local d = FOV_Drawings.Dotted[i]
+                    local angle = math.rad((i / numDots) * 360 + fovRotation)
+                    local p1 = mousePos + Vector2.new(math.cos(angle), math.sin(angle)) * fovRadius
+                    local p2 = mousePos + Vector2.new(math.cos(angle + 0.05), math.sin(angle + 0.05)) * fovRadius
+                    d.From = p1
+                    d.To = p2
+                    d.Visible = true
+                end
+            end
+        end
+
+        -- Aimbot Logic
+        local isAiming = active("Aimbot Enabled", "Aimbot Key")
+        local previousTarget = currentTarget
+        
+        if isAiming then
+            if F("Aimbot Sticky") then
+                if not currentTarget or not isTargetValid(currentTarget, true) then
+                    currentTarget = getClosestPlayer()
+                end
+            else
+                currentTarget = getClosestPlayer()
+            end
+
+            if currentTarget then
+                local pos = getTargetPos(currentTarget)
+                if pos then
+                    -- Shake
+                    if F("Aimbot Shake") then
+                        local intensity = (F("Aimbot Shake Intensity") or 1) / 5
+                        local pattern = F("Aimbot Shake Pattern") or "Random"
+                        local offset = Vector3.new(0, 0, 0)
+                        
+                        if pattern == "Random" then
+                            offset = Vector3.new(math.random(-100, 100), math.random(-100, 100), math.random(-100, 100)) * (intensity / 100)
+                        elseif pattern == "Circular" then
+                            offset = Vector3.new(math.sin(tick() * 10), math.cos(tick() * 10), 0) * intensity
+                        elseif pattern == "Horizontal" then
+                            offset = Vector3.new(math.sin(tick() * 15), 0, 0) * intensity
+                        elseif pattern == "Vertical" then
+                            offset = Vector3.new(0, math.sin(tick() * 15), 0) * intensity
+                        end
+                        pos = pos + offset
+                    end
+                    rotateCamera(pos)
+                end
+            end
+        else
+            currentTarget = nil
+        end
+    end)
+end
+
+do -- Silent Aim Logic
+    local RS = game:GetService("RunService")
+    local Players = game:GetService("Players")
+    local LP = Players.LocalPlayer
+    local Cam = workspace.CurrentCamera
+    local UIS = game:GetService("UserInputService")
+    
+    local silentTarget = nil
+    local silentTargetPart = nil
+    
+    local dotDrawing = makeDrawing("Circle")
+    dotDrawing.Filled = true
+    dotDrawing.Radius = 3
+    dotDrawing.Transparency = 1
+    dotDrawing.Visible = false
+
+    local SilentFOV_Drawings = {
+        Circle = makeDrawing("Circle"),
+        Square = makeDrawing("Square"),
+        Dotted = {}
+    }
+    for i = 1, 16 do
+        table.insert(SilentFOV_Drawings.Dotted, makeDrawing("Line"))
+    end
+    local silentFovRotation = 0
+
+    local function isSilentTargetValid(player)
+        if not player or not player.Character then return false end
+        local char = player.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not hrp or hum.Health <= 0 then return false end
+
+        -- Checks
+        if F("Silent Check Friend") and player.Team == LP.Team then return false end
+        if F("Silent Check Knock") then
+            if char:FindFirstChild("BodyEffects") and char.BodyEffects:FindFirstChild("K.O") and char.BodyEffects["K.O"].Value then return false end
+            if char:FindFirstChild("KO") and char.KO.Value then return false end
+        end
+
+        return true
+    end
+
+    local function getSilentTargetPos(targetPart)
+        if not targetPart or typeof(targetPart) ~= "Instance" or not targetPart:IsA("BasePart") then return nil end
+
+        local pos = targetPart.Position
+        local vel = targetPart.AssemblyLinearVelocity
+
+        -- Resolver Methods
+        if F("Silent Resolver") then
+            local resType = F("Silent Resolver Type") or "Velocity"
+            
+            if resType == "Velocity" then
+                if vel.Magnitude > 50 or math.abs(vel.Y) > 25 then
+                    vel = Vector3.new(vel.X, 0, vel.Z).Unit * 15 
+                end
+            elseif resType == "No Prediction" then
+                vel = Vector3.new(0, 0, 0)
+            end
+        end
+
+        -- Prediction
+        if F("Silent Prediction") then
+            local pred = tonumber(F("Silent Prediction Amount")) or 0.15
+            pos = pos + (vel * pred)
+        end
+
+        return pos
+    end
+
+    local function getSilentTarget()
+        local method = F("Silent Target Method") or "Closest to Mouse"
+        local target = nil
+        local bestValue = math.huge
+        local mousePos = UIS:GetMouseLocation()
+        local bestPartForTarget = nil
+
+        local isClosestPart = F("Silent Closest Part")
+        local partsList = F("Silent Part") or {"Head"}
+        if type(partsList) ~= "table" then partsList = {partsList} end
+
+        for _, v in ipairs(Players:GetPlayers()) do
+            if v == LP then continue end
+            if isSilentTargetValid(v) then
+                local char = v.Character
+                
+                local partsToCheck = {}
+                if isClosestPart then
+                    for _, child in ipairs(char:GetChildren()) do
+                        if child:IsA("BasePart") then
+                            table.insert(partsToCheck, child)
+                        end
+                    end
+                else
+                    for _, pName in ipairs(partsList) do
+                        local p = char:FindFirstChild(pName)
+                        if p then table.insert(partsToCheck, p) end
+                    end
+                end
+                
+                if #partsToCheck == 0 then
+                    local backup = char:FindFirstChild("Head") or char:FindFirstChild("HumanoidRootPart")
+                    if backup then table.insert(partsToCheck, backup) end
+                end
+
+                for _, tPart in ipairs(partsToCheck) do
+                    local screenPos, onScreen = Cam:WorldToViewportPoint(tPart.Position)
+                    
+                    -- Wall Check
+                    if F("Silent Check Wall") then
+                        local ray = Ray.new(Cam.CFrame.Position, (tPart.Position - Cam.CFrame.Position).Unit * 500)
+                        local hit = workspace:FindPartOnRayWithIgnoreList(ray, {LP.Character, char})
+                        if hit then continue end
+                    end
+
+                    if method == "Closest to Mouse" or method == "FOV" then
+                        if onScreen then
+                            local mag = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                            
+                            -- Silent FOV limit check
+                            local fovRadius = F("Silent FOV") or 120
+                            if method == "Closest to Mouse" or (method == "FOV" and mag <= fovRadius) then
+                                if mag < bestValue then
+                                    bestValue = mag
+                                    target = v
+                                    bestPartForTarget = tPart
+                                end
+                            end
+                        end
+                    elseif method == "Closest Player" then
+                        local lpChar = LP.Character
+                        local lpRoot = lpChar and lpChar:FindFirstChild("HumanoidRootPart")
+                        if lpRoot then
+                            local dist = (tPart.Position - lpRoot.Position).Magnitude
+                            if dist < bestValue then
+                                bestValue = dist
+                                target = v
+                                bestPartForTarget = tPart
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        silentTargetPart = bestPartForTarget
+        return target
+    end
+
+    RS.RenderStepped:Connect(function(dt)
+        -- Update Silent FOV Visuals
+        local fovEnabled = F("Silent FOV Visible")
+        local fovShape = F("Silent FOV Shape") or "Circle"
+        local fovRadius = F("Silent FOV") or 120
+        local mousePos = UIS:GetMouseLocation()
+        
+        -- Animation Logic
+        if F("Silent FOV Rainbow") then
+            local speed = F("Silent FOV Rainbow Speed") or 1
+            local color = Color3.fromHSV(tick() * speed % 1, 0.8, 1)
+            SilentFOV_Drawings.Circle.Color = color
+            SilentFOV_Drawings.Square.Color = color
+            for _, d in ipairs(SilentFOV_Drawings.Dotted) do d.Color = color end
+        else
+            local color = F("Silent FOV Color") or Color3.fromRGB(255, 0, 0)
+            SilentFOV_Drawings.Circle.Color = color
+            SilentFOV_Drawings.Square.Color = color
+            for _, d in ipairs(SilentFOV_Drawings.Dotted) do d.Color = color end
+        end
+
+        if F("Silent FOV Spin") then
+            silentFovRotation = silentFovRotation + (F("Silent FOV Spin Speed") or 90) * dt
+        end
+
+        -- Visibility cleanup
+        SilentFOV_Drawings.Circle.Visible = fovEnabled and (fovShape == "Circle")
+        SilentFOV_Drawings.Square.Visible = fovEnabled and (fovShape == "Square")
+        for _, d in ipairs(SilentFOV_Drawings.Dotted) do d.Visible = false end
+
+        if fovEnabled then
+            if fovShape == "Circle" then
+                SilentFOV_Drawings.Circle.Radius = fovRadius
+                SilentFOV_Drawings.Circle.Position = mousePos
+                SilentFOV_Drawings.Circle.Thickness = F("Silent FOV Thickness") or 1
+            elseif fovShape == "Square" then
+                SilentFOV_Drawings.Square.Size = Vector2.new(fovRadius * 2, fovRadius * 2)
+                SilentFOV_Drawings.Square.Position = mousePos - Vector2.new(fovRadius, fovRadius)
+                SilentFOV_Drawings.Square.Thickness = F("Silent FOV Thickness") or 1
+            elseif fovShape == "Dotted Circle" then
+                local numDots = #SilentFOV_Drawings.Dotted
+                for i = 1, numDots do
+                    local d = SilentFOV_Drawings.Dotted[i]
+                    local angle = math.rad((i / numDots) * 360 + silentFovRotation)
+                    local p1 = mousePos + Vector2.new(math.cos(angle), math.sin(angle)) * fovRadius
+                    local p2 = mousePos + Vector2.new(math.cos(angle + 0.05), math.sin(angle + 0.05)) * fovRadius
+                    d.From = p1
+                    d.To = p2
+                    d.Visible = true
+                end
+            end
+        end
+
+        if not active("Silent Enabled", "Silent Key") then
+            silentTarget = nil
+            dotDrawing.Visible = false
+            return
+        end
+
+        local prevTarget = silentTarget
+        silentTarget = getSilentTarget()
+
+        if F("Silent Target Indicator") and _G.VonkaIndicatorUI and _G.VonkaIndicatorUI.Update then 
+            _G.VonkaIndicatorUI.Update(silentTarget, true) 
+        end
+
+        if F("Silent Notifications") and silentTarget ~= prevTarget then
+            if silentTarget then
+                Library:Notification("Silent Aim Locked: " .. silentTarget.Name, 2, Color3.fromRGB(0, 255, 100))
+            elseif prevTarget then
+                Library:Notification("Silent Aim Target lost", 1, Color3.fromRGB(255, 50, 50))
+            end
+        end
+
+        if silentTarget and silentTargetPart and silentTarget.Character then
+            if F("Silent Target Dot") then
+                local screenPos, onScreen = Cam:WorldToViewportPoint(silentTargetPart.Position)
+                if onScreen then
+                    dotDrawing.Position = Vector2.new(screenPos.X, screenPos.Y)
+                    
+                    if F("Silent Dot Dynamic Color") then
+                        dotDrawing.Color = silentTargetPart.Color
+                    else
+                        dotDrawing.Color = F("Silent Target Dot Color") or Color3.fromRGB(255, 0, 0)
+                    end
+                    
+                    dotDrawing.Visible = true
+                else
+                    dotDrawing.Visible = false
+                end
+            else
+                dotDrawing.Visible = false
+            end
+        else
+            dotDrawing.Visible = false
+        end
+    end)
+    
+    -- Da Hood specific Hook Setup for Silent Aim
+    if type(hookmetamethod) == "function" and type(checkcaller) == "function" then
+        local oldNamecall
+        local oldIndex
+        
+        pcall(function()
+            -- Hook __index for Mouse.Hit and Mouse.Target
+            oldIndex = hookmetamethod(game, "__index", function(self, key)
+                if not checkcaller() and active("Silent Enabled", "Silent Key") and silentTarget and silentTargetPart then
+                    if typeof(self) == "Instance" and self:IsA("Mouse") then
+                        if key == "Hit" then
+                            local hitPos = getSilentTargetPos(silentTargetPart) or silentTargetPart.Position
+                            return CFrame.new(hitPos)
+                        elseif key == "Target" then
+                            return silentTargetPart
+                        end
+                    end
+                end
+                return oldIndex(self, key)
+            end)
+            
+            -- Hook __namecall for MainEvent args
+            oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+                local method = getnamecallmethod()
+                local rawArgs = {...}
+                local function callOldWithFallback(argsToSend)
+                    local ok, result = pcall(function()
+                        return oldNamecall(self, unpack(argsToSend))
+                    end)
+                    if ok then
+                        return result
+                    end
+                    return oldNamecall(self, unpack(rawArgs))
+                end
+
+                -- Track real local shots from outgoing Shoot packets.
+                if not checkcaller()
+                    and method == "FireServer"
+                    and typeof(self) == "Instance"
+                    and self:IsA("RemoteEvent")
+                    and self.Name == "MainEvent"
+                    and rawArgs[1] == "Shoot" then
+                    _G.VonkaLastLocalShot = tick()
+
+                    if _G.VonkaBeamSpawn then
+                        local myChar = LP.Character
+                        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+                        local fromPos = myRoot and myRoot.Position or nil
+                        local targetPos = nil
+                        local packet = rawArgs[2]
+
+                        if type(packet) == "table" and type(packet[1]) == "table" and type(packet[1][1]) == "table" then
+                            local hit = packet[1][1]
+                            if typeof(hit.Position) == "Vector3" then
+                                targetPos = hit.Position
+                            elseif typeof(hit.Instance) == "Instance" and hit.Instance:IsA("BasePart") then
+                                targetPos = hit.Instance.Position
+                            end
+                        end
+
+                        if typeof(targetPos) ~= "Vector3" then
+                            local mouse = LP:GetMouse()
+                            if mouse and mouse.Hit then
+                                targetPos = mouse.Hit.Position
+                            end
+                        end
+
+                        if typeof(fromPos) == "Vector3" and typeof(targetPos) == "Vector3" then
+                            pcall(function() _G.VonkaBeamSpawn(fromPos, targetPos) end)
+                        end
+                    end
+                end
+                
+                if not checkcaller() and active("Silent Enabled", "Silent Key") and silentTarget and silentTargetPart then
+                    local hitPos = getSilentTargetPos(silentTargetPart) or silentTargetPart.Position
+                    
+                    if typeof(self) == "Instance" then
+                        -- Handle Raycast interception (generic for many games)
+                        if method == "Raycast" and self == workspace then
+                            local args = {...}
+                            local origin = args[1]
+                            if typeof(origin) == "Vector3" then
+                                local newDirection = (hitPos - origin).Unit * (args[2].Magnitude or 1000)
+                                args[2] = newDirection
+                                return callOldWithFallback(args)
+                            end
+                        end
+                        
+                        -- Handle RemoteEvents (scoped: avoid corrupting unrelated packets)
+                        if self:IsA("RemoteEvent") and method == "FireServer" and self.Name == "MainEvent" then
+                            local args = {...}
+
+                            -- Only rewrite known aim fields; blanket Vector3 replacement can break game effects.
+                            if args[1] == "MousePosUpdate" then
+                                args[2] = hitPos
+                            end
+
+                            return callOldWithFallback(args)
+                        end
+                    end
+                end
+                return callOldWithFallback(rawArgs)
+            end)
+        end)
+    end
+end
+
+do -- Force Logic
+    local RS      = game:GetService("RunService")
+    local LP      = game:GetService("Players").LocalPlayer
+
+    local lastForceFire = 0
+    local mainEvent = nil
+    
+    local GUN_TOOL_NAMES = {
+        "[Revolver]",
+        "[DoubleBarrel]",
+        "[Shotgun]",
+        "[Silencer]",
+        "[TacticalShotgun]",
+        "[SMG]",
+        "[Flintlock]",
+        "[Firework Launcher]",
+    }
+
+    local forceTargetLine = makeDrawing("Line")
+    forceTargetLine.Visible = false
+    forceTargetLine.Thickness = 1.5
+    forceTargetLine.Color = Color3.fromRGB(255, 0, 0)
+    forceTargetLine.ZIndex = 2
+
+    local function getEquippedGun()
+        local myChar = LP.Character
+        if not myChar then return nil end
+        local tool = myChar:FindFirstChildOfClass("Tool")
+        if tool then
+            -- First check exact names
+            for _, name in ipairs(GUN_TOOL_NAMES) do
+                if tool.Name == name then return tool end
+            end
+        end
+        return nil
+    end
+
+    -- Function to find the main remote event (common in Da Hood games)
+    local function getMainEvent()
+        if mainEvent then return mainEvent end
+        mainEvent = game:GetService("ReplicatedStorage"):WaitForChild("MainEvent")
+        if not mainEvent then
+            -- fallback search
+            for _, v in ipairs(game:GetService("ReplicatedStorage"):GetDescendants()) do
+                if v:IsA("RemoteEvent") and (v.Name == "MainEvent" or v.Name == "Remote") then
+                    mainEvent = v
+                    break
+                end
+            end
+        end
+        return mainEvent
+    end
+
+    local currentTargetPlayer = nil
+
+    local function isForceTargetValid(p)
+        if not p or not p.Character then return false end
+        local myChar = LP.Character
+        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return false end
+        
+        local char = p.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not hrp or hum.Health <= 0 then return false end
+        
+        if F("Force FF Check") and char:FindFirstChildOfClass("ForceField") then return false end
+        if F("Force Knock Check") then
+            if char:FindFirstChild("BodyEffects") and char.BodyEffects:FindFirstChild("K.O") and char.BodyEffects["K.O"].Value then return false end
+            if char:FindFirstChild("KO") and char.KO.Value then return false end
+        end
+        
+        local distToPlayer = (hrp.Position - myChar.HumanoidRootPart.Position).Magnitude
+        local maxRange = F("Force Range") or 1000
+        if distToPlayer > maxRange then return false end
+        
+        return true
+    end
+
+    local function getForceTarget()
+        local myChar = LP.Character
+        if not myChar then return nil end
+        
+        local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return nil end
+
+        local players = game:GetService("Players"):GetPlayers()
+        local closest = nil
+        local maxRange = F("Force Range") or 1000
+        
+        local myPos = myRoot.Position
+        
+        -- Sticky Target Logic: Always stay on the target if we already have one
+        if currentTargetPlayer and isForceTargetValid(currentTargetPlayer) then
+            return currentTargetPlayer
+        end
+
+        local mouse = LP:GetMouse()
+        local mousePos = Vector2.new(mouse.X, mouse.Y)
+        local minMouseDist = math.huge
+        local Cam = workspace.CurrentCamera
+
+        for _, p in ipairs(players) do
+            if p == LP then continue end
+            if isForceTargetValid(p) then
+                local hrp = p.Character.HumanoidRootPart
+                local screenPos, onScreen = Cam:WorldToViewportPoint(hrp.Position)
+                if onScreen then
+                    local distToMouse = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if distToMouse < minMouseDist then
+                        minMouseDist = distToMouse
+                        closest = p
+                    end
+                end
+            end
+        end
+        return closest
+    end
+
+    RS.RenderStepped:Connect(function()
+        if not active("Force Enabled", "Force Key") then 
+            currentTargetPlayer = nil
+            forceTargetLine.Visible = false
+            if _G.VonkaIndicatorUI and _G.VonkaIndicatorUI.Update then 
+                _G.VonkaIndicatorUI.Update(nil, false) 
+            end
+            return 
+        end
+        
+        -- Always update target based on mouse position
+        currentTargetPlayer = getForceTarget()
+        
+        if F("Force Target Indicator") and _G.VonkaIndicatorUI and _G.VonkaIndicatorUI.Update then 
+            _G.VonkaIndicatorUI.Update(currentTargetPlayer, true) 
+        end
+        
+        -- Target Line Visual
+        if F("Force Target Line") and currentTargetPlayer and currentTargetPlayer.Character then
+            local enemyChar = currentTargetPlayer.Character
+            local targetPart = enemyChar:FindFirstChild(F("Force Target Part") or "Head") or enemyChar:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                local Cam = workspace.CurrentCamera
+                local screenPos, onScreen = Cam:WorldToViewportPoint(targetPart.Position)
+                if onScreen then
+                    local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                    forceTargetLine.From = Vector2.new(screenPos.X, screenPos.Y)
+                    forceTargetLine.To = mousePos
+                    forceTargetLine.Color = F("Force Target Line Color") or Color3.fromRGB(255, 0, 0)
+                    forceTargetLine.Visible = true
+                else
+                    forceTargetLine.Visible = false
+                end
+            else
+                forceTargetLine.Visible = false
+            end
+        else
+            forceTargetLine.Visible = false
+        end
+    end)
+
+    RS.Heartbeat:Connect(function()
+        if not active("Force Enabled", "Force Key") then 
+            return 
+        end
+        
+        local currentGun = getEquippedGun()
+        if not currentGun then 
+            return 
+        end
+        
+        local now = tick()
+        local rawCooldown = F("Force Cooldown")
+        local cooldown = (type(rawCooldown) == "number" and rawCooldown) or 1.2
+        cooldown = math.max(1.0, cooldown) -- force cadence similar to stable DB script
+        
+        if now - lastForceFire < cooldown then return end
+        
+        if not currentTargetPlayer then return end
+        
+        local enemyChar = currentTargetPlayer.Character
+        if not enemyChar then return end
+        local tRoot = enemyChar:FindFirstChild("HumanoidRootPart")
+        if not tRoot then return end
+        
+        local partName = F("Force Target Part") or "Head"
+        local targetPart = enemyChar:FindFirstChild(partName) or tRoot
+        local event = getMainEvent()
+        if not event then return end
+
+        local myChar = LP.Character
+        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+        
+        local myRoot = myChar.HumanoidRootPart
+        if not targetPart or not targetPart:IsA("BasePart") or not targetPart:IsDescendantOf(workspace) then return end
+
+        local myPos = myRoot.Position
+        local targetPos = targetPart.Position
+        if not isVectorValid(myPos) or not isVectorValid(targetPos) then return end
+
+        lastForceFire = now
+
+        local function shootOnce()
+            if not targetPart or not targetPart:IsA("BasePart") or not targetPart:IsDescendantOf(workspace) then return end
+            targetPos = targetPart.Position
+            if not isVectorValid(targetPos) then return end
+            local args = {
+                [1] = "Shoot",
+                [2] = {
+                    [1] = {
+                        [1] = { Normal = targetPos, Instance = targetPart, Position = targetPos },
+                        [2] = { Normal = targetPos, Instance = targetPart, Position = targetPos },
+                        [3] = { Normal = targetPos, Instance = targetPart, Position = targetPos },
+                        [4] = { Normal = targetPos, Instance = targetPart, Position = targetPos },
+                        [5] = { Normal = targetPos, Instance = targetPart, Position = targetPos },
+                    },
+                    [2] = {
+                        [1] = { thePart = targetPart, theOffset = Vector3.new(0, 0, 0) },
+                        [2] = { thePart = targetPart, theOffset = Vector3.new(0, 0, 0) },
+                        [3] = { thePart = targetPart, theOffset = Vector3.new(0, 0, 0) },
+                        [4] = { thePart = targetPart, theOffset = Vector3.new(0, 0, 0) },
+                        [5] = { thePart = targetPart, theOffset = Vector3.new(0, 0, 0) },
+                    },
+                    [3] = myPos,
+                    [4] = myPos,
+                    [5] = workspace:GetServerTimeNow(),
+                },
+            }
+            pcall(function() event:FireServer(unpack(args)) end)
+        end
+
+        -- Keep one packet per cycle; burst spam causes dropped unreliable events and client errors.
+        local burstCount = 1
+
+        for i = 1, burstCount do
+            shootOnce()
+            if i < burstCount then
+                task.wait(0.02)
+            end
+        end
+
+        if F("Force Auto Reload") then
+            task.spawn(function()
+                task.wait(0.1)
+                -- check if we still have the same gun equipped for reload
+                local gunToReload = getEquippedGun()
+                if gunToReload and gunToReload == currentGun then
+                    pcall(function() event:FireServer("Reload", gunToReload) end)
+                end
+            end)
+        end
+    end)
+end
+
+do -- Staff Detection Logic
+    local Players = game:GetService("Players")
+    local LP = Players.LocalPlayer
+    
+    local StaffGroupID = 339846382
+    local bannedIDs = {
+        [84077198] = true, [78027] = true, [1670001473] = true, [351633] = true, [7438567227] = true,
+        [358343636] = true, [1803388] = true, [2641667808] = true, [1376166] = true, [252969769] = true,
+        [134563] = true, [21829] = true, [1652146284] = true, [8174057002] = true, [70533] = true,
+        [652612117] = true, [1046851536] = true, [750087] = true, [5801091074] = true, [3928412111] = true,
+        [1449319231] = true, [78393150] = true, [9506887465] = true, [170526279] = true, [7939533472] = true,
+        [59869313] = true, [9622317500] = true, [7349991569] = true, [76190] = true, [8879652417] = true, [9831818501] = true,
+        [9817598598] = true, [1860328] = true, [5089232823] = true
+    }
+
+    local function handleStaff(player)
+        if not F("Staff Detect Enabled") then return end
+        if player == LP then return end
+
+        local isStaff = false
+        if bannedIDs[player.UserId] then
+            isStaff = true
+        else
+            local ok, inGroup = pcall(function() return player:IsInGroup(StaffGroupID) end)
+            if ok and inGroup then
+                isStaff = true
+            end
+        end
+
+        if isStaff then
+            local action = F("Staff Detect Action") or "Notification"
+            local msg = "Staff detected: " .. player.Name .. " (" .. player.UserId .. ")"
+            
+            if action == "Notification" or action == "Both" then
+                Library:Notification(msg, 5, Color3.fromRGB(255, 0, 0))
+            end
+            
+            if action == "Kick" or action == "Both" then
+                LP:Kick("Auto-Kicked: " .. msg)
+            end
+        end
+    end
+
+    Players.PlayerAdded:Connect(handleStaff)
+    
+    -- Check existing players when enabled
+    task.spawn(function()
+        while task.wait(1) do
+            if F("Staff Detect Enabled") then
+                for _, p in ipairs(Players:GetPlayers()) do
+                    handleStaff(p)
+                end
+            end
+        end
+    end)
+end
+
+-- force Visual subpage active by default
+task.delay(1, function()
+    for _, sp in ipairs(VisualTab.SubPages) do
+        local isVisual = (sp == VisualPage)
+        sp.Active = isVisual
+        sp.Elements["Subtab"].Instance.Visible = isVisual
+        sp.Elements["Hide"].Instance.Visible = isVisual
+    end
+end)
+
+do -- Settings
+    local SS = SettingsTab:Section({Name = "Settings", Side = 2})
+    local CS = SettingsTab:Section({Name = "Profiles", Side = 1})
+    
+    for I, V in Library.Theme do 
+        SS:Label({Name = I, Alignment = "Left"}):Colorpicker({
+            Name = I, 
+            Default = V, 
+            Flag = "Theme" .. I, 
+            Callback = function(C) 
+                Library.Theme[I] = C
+                Library:ChangeTheme(I, C) 
+            end
+        }) 
+    end
+    
+    SS:Label({Name = "Menu Keybind", Alignment = "Left"}):Keybind({
+        Name = "Menu Keybind", 
+        Flag = "Menu Keybind", 
+        Default = Enum.KeyCode.RightControl, 
+        Mode = "Toggle", 
+        Callback = function() 
+            Library.MenuKeybind = Library.Flags["Menu Keybind"].Key 
+        end
+    })
+    
+    SS:Toggle({
+        Name = "Watermark", 
+        Flag = "Watermark", 
+        Default = false, 
+        Callback = function(v) 
+            Watermark:SetVisibility(v) 
+        end
+    })
+    
+    SS:Toggle({
+        Name = "Keybind List", 
+        Flag = "Keybind List", 
+        Default = false, 
+        Callback = function(v) 
+            KeybindList:SetVisibility(v) 
+        end
+    })
+    
+    SS:Button({
+        Name = "Unload library", 
+        Callback = function()
+            -- destroy ESP drawings and label gui
+            if _G.VonkaESPCleanup then pcall(_G.VonkaESPCleanup) end
+            Library:Unload()
+        end
+    })
+    
+    SS:Divider()
+    
+    SS:Button({
+        Name = "Rejoin", 
+        Callback = function()
+            local TeleportService = game:GetService("TeleportService")
+            TeleportService:Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
+        end
+    })
+    
+    SS:Button({
+        Name = "Hop Server", 
+        Callback = function()
+            local TeleportService = game:GetService("TeleportService")
+            local placeId = game.PlaceId
+            local currentJobId = game.JobId
+            local httpFunc = request or syn and syn.request or http and http.request
+            
+            if not httpFunc then
+                Library:Notification("HTTP not supported on this executor", 3, Color3.fromRGB(255, 80, 80))
+                return
+            end
+            
+            local ok, result = pcall(function()
+                return httpFunc({
+                    Url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100",
+                    Method = "GET"
+                })
+            end)
+            
+            if not ok or not result or not result.Body then
+                Library:Notification("Failed to fetch servers", 3, Color3.fromRGB(255, 80, 80))
+                return
+            end
+            
+            local ok2, data = pcall(function()
+                return game:GetService("HttpService"):JSONDecode(result.Body)
+            end)
+            
+            if not ok2 or not data or not data.data then
+                Library:Notification("Failed to parse servers", 3, Color3.fromRGB(255, 80, 80))
+                return
+            end
+            
+            for _, server in ipairs(data.data) do
+                if server.id ~= currentJobId and server.playing < server.maxPlayers then
+                    TeleportService:TeleportToPlaceInstance(placeId, server.id, game:GetService("Players").LocalPlayer)
+                    return
+                end
+            end
+            
+            Library:Notification("No available servers found", 3, Color3.fromRGB(255, 80, 80))
+        end
+    })
+    
+    local CN
+    local CSel
+    
+    local CL = CS:Listbox({
+        Items = {}, 
+        Name = "Configs", 
+        Flag = "Configs List", 
+        Callback = function(v) 
+            CSel = v 
+        end
+    })
+    
+    CS:Textbox({
+        Name = "Config Name", 
+        Placeholder = ". .", 
+        Flag = "Config Name", 
+        Callback = function(v) 
+            CN = v 
+        end
+    })
+    
+    CS:Button({
+        Name = "Create Config", 
+        Callback = function()
+            if not CN or CN == "" then 
+                Library:Notification("Enter a config name first", 3, Color3.fromRGB(255, 80, 80))
+                return 
+            end
+            
+            local P = Library.Folders.Configs .. "/" .. CN .. ".json"
+            if not isfile(P) then 
+                writefile(P, Library:GetConfig())
+                Library:Notification("Created '" .. CN .. ".json'", 3, Color3.fromRGB(0, 255, 0))
+                Library:RefreshConfigsList(CL)
+            else 
+                Library:Notification("'" .. CN .. ".json' already exists", 3, Color3.fromRGB(255, 80, 80)) 
+            end
+        end
+    })
+    
+    CS:Button({
+        Name = "Load Config", 
+        Callback = function()
+            if not CSel then 
+                Library:Notification("Select a config first", 3, Color3.fromRGB(255, 80, 80))
+                return 
+            end
+            
+            Library:LoadConfig(readfile(Library.Folders.Configs .. "/" .. CSel))
+            Library:Thread(function() 
+                task.wait(0.1)
+                for I, V in Library.Theme do 
+                    Library.Theme[I] = Library.Flags["Theme" .. I].Color
+                    Library:ChangeTheme(I, Library.Flags["Theme" .. I].Color) 
+                end 
+            end)
+        end
+    })
+    
+    CS:Button({
+        Name = "Save Config", 
+        Callback = function()
+            if not CSel then 
+                Library:Notification("Select a config first", 3, Color3.fromRGB(255, 80, 80))
+                return 
+            end
+            
+            writefile(Library.Folders.Configs .. "/" .. CSel, Library:GetConfig())
+            Library:Notification("Saved '" .. CSel .. "'", 3, Color3.fromRGB(0, 255, 0))
+        end
+    })
+    
+    CS:Button({
+        Name = "Delete Config", 
+        Callback = function()
+            if not CSel then 
+                Library:Notification("Select a config first", 3, Color3.fromRGB(255, 80, 80))
+                return 
+            end
+            
+            Library:DeleteConfig(CSel)
+            Library:RefreshConfigsList(CL)
+        end
+    })
+    CS:Button({Name="Refresh List",Callback=function() Library:RefreshConfigsList(CL) end})
+    Library:RefreshConfigsList(CL)
+end
+
+-- ESP
+do
+    local Players = game:GetService("Players")
+    local RS      = game:GetService("RunService")
+    local UIS     = game:GetService("UserInputService")
+    local Cam     = workspace.CurrentCamera
+    local LP      = Players.LocalPlayer
+    local Flags   = Library.Flags
+
+    -- Inline flag reader: avoids repeated table-type checks
+    local function F(flag)
+        local v = (Flags and Flags[flag])
+        if v == nil then return false end
+        if type(v) == "table" then
+            local res = v.Color or v.Key or v
+            return (res == nil and false or res)
+        end
+        return v
+    end
+
+    -- Drawing constructors
+    local function L()  local d=makeDrawing("Line");   d.Visible=false;d.Thickness=1;d.Color=Color3.fromRGB(255,255,255);return d end
+    local function Sq() local d=makeDrawing("Square"); d.Visible=false;d.Thickness=1;d.Filled=false;d.Color=Color3.fromRGB(255,255,255);return d end
+    local function Tx() local d=makeDrawing("Text");   d.Visible=false;d.Size=14;d.Center=true;d.Outline=true;d.Color=Color3.fromRGB(255,255,255);return d end
+    local function Ba() local d=makeDrawing("Square"); d.Visible=false;d.Filled=true;d.Thickness=1;return d end
+    local function Ci() local d=makeDrawing("Circle"); d.Visible=false;d.Thickness=1;d.Filled=false;d.Color=Color3.fromRGB(255,0,0);return d end
+
+    local R15={{"Head","UpperTorso"},{"UpperTorso","LowerTorso"},{"UpperTorso","RightUpperArm"},{"RightUpperArm","RightLowerArm"},{"RightLowerArm","RightHand"},{"UpperTorso","LeftUpperArm"},{"LeftUpperArm","LeftLowerArm"},{"LeftLowerArm","LeftHand"},{"LowerTorso","RightUpperLeg"},{"RightUpperLeg","RightLowerLeg"},{"RightLowerLeg","RightFoot"},{"LowerTorso","LeftUpperLeg"},{"LeftUpperLeg","LeftLowerLeg"},{"LeftLowerLeg","LeftFoot"}}
+    local R6={{"Head","Torso"},{"Torso","Right Arm"},{"Torso","Left Arm"},{"Torso","Right Leg"},{"Torso","Left Leg"}}
+    local BMAX = #R15
+
+    local objs   = {}
+    local leaving = {}
+
+    -- Cache body parts for a character so we don't call FindFirstChild every frame
+    local function cacheCharParts(char)
+        local isR15 = char:FindFirstChild("UpperTorso") ~= nil
+        local bones = isR15 and R15 or R6
+        local boneParts = {}
+        for i = 1, BMAX do
+            local pair = bones[i]
+            if pair then
+                boneParts[i] = {char:FindFirstChild(pair[1]), char:FindFirstChild(pair[2])}
+            end
+        end
+        -- cache all BaseParts for bounds + chams (exclude HRP)
+        local parts = {}
+        for _, p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then
+                parts[#parts+1] = p
+            end
+        end
+        return boneParts, parts
+    end
+
+    -- Initializes an ESP object for a player
+    local function mk(player)
+        if leaving[player] then return end
+        if objs[player] then return end -- already exists
+        
+        -- Master object holding all drawing elements for a player
+        local obj = {
+            boxL = {L(), L(), L(), L(), L(), L(), L(), L()}, 
+            boxO = {L(), L(), L(), L(), L(), L(), L(), L()},
+            boxFill = Sq(),
+            trOut = L(), 
+            tr = L(),
+            nm = Tx(), 
+            dn = Tx(), 
+            dist = Tx(), 
+            tool = Tx(),
+            hpBG = Ba(), 
+            hpBar = Ba(), 
+            hpTxt = Tx(),
+            
+            -- Caches for parts to improve performance
+            boneParts = nil, 
+            parts = nil,
+            chamsApplied = false, 
+            chamsColor = nil,
+            
+            -- Tool state
+            toolName = "", 
+            toolConn = nil, 
+            toolConn2 = nil, 
+            charConn = nil,
+        }
+        objs[player] = obj
+        
+        -- Connect character caching events
+        local function onChar(char)
+            if not objs[player] then return end
+            task.spawn(function()
+                -- Wait for character to fully load (appearance + all parts)
+                local hum = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid", 10)
+                if not hum then return end
+                
+                -- Wait until HRP exists and character is in workspace
+                local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 10)
+                if not hrp then return end
+                
+                -- Small wait to let all descendant parts replicate over the network
+                task.wait(0.5)
+                if not objs[player] then return end
+                
+                -- Cache the parts to avoid GetDescendants() calls every frame
+                local bp, pts = cacheCharParts(char)
+                obj.boneParts = bp
+                obj.parts = pts
+                obj.chamsApplied = false
+                obj.chamsColor = nil
+                obj.toolName = ""
+                
+                -- Clear old tool connections
+                if obj.toolConn then obj.toolConn:Disconnect(); obj.toolConn = nil end
+                if obj.toolConn2 then obj.toolConn2:Disconnect(); obj.toolConn2 = nil end
+                
+                -- Listen for tool equip/unequip
+                obj.toolConn = char.ChildAdded:Connect(function(c)
+                    if c:IsA("Tool") then obj.toolName = c.Name end
+                end)
+                obj.toolConn2 = char.ChildRemoved:Connect(function(c)
+                    if c:IsA("Tool") and obj.toolName == c.Name then obj.toolName = "" end
+                end)
+                
+                -- Check currently equipped tool
+                for _, c in ipairs(char:GetChildren()) do
+                    if c:IsA("Tool") then 
+                        obj.toolName = c.Name
+                        break 
+                    end
+                end
+            end)
+        end
+        
+        if player.Character then onChar(player.Character) end
+        obj.charConn = player.CharacterAdded:Connect(onChar)
+    end
+
+    -- Removes a player's ESP object and cleans up drawings/events
+    local function rm(player)
+        local obj = objs[player]
+        if not obj then return end
+        
+        -- Disconnect events first
+        if obj.charConn then obj.charConn:Disconnect() end
+        if obj.toolConn then obj.toolConn:Disconnect() end
+        if obj.toolConn2 then obj.toolConn2:Disconnect() end
+        
+        -- Hide immediately then remove safely
+        for _, arr in ipairs({obj.boxL, obj.boxO}) do
+            if arr then 
+                for _, d in ipairs(arr) do 
+                    d.Visible = false
+                    pcall(function() d:Remove() end) 
+                end 
+            end
+        end
+        
+        for _, d in ipairs({obj.trOut, obj.tr, obj.nm, obj.dn, obj.dist, obj.tool, obj.hpBG, obj.hpBar, obj.hpTxt, obj.boxFill}) do
+            d.Visible = false
+            pcall(function() d:Remove() end)
+        end
+        
+        objs[player] = nil
+    end
+
+    -- Temporarily hides all ESP elements for a player (e.g. when dead or out of view)
+    local function hide(player)
+        local obj = objs[player]
+        if not obj then return end
+        
+        for _, arr in ipairs({obj.boxL, obj.boxO}) do
+            if arr then 
+                for _, d in ipairs(arr) do 
+                    d.Visible = false 
+                end 
+            end
+        end
+        
+        for _, d in ipairs({obj.trOut, obj.tr, obj.nm, obj.dn, obj.dist, obj.tool, obj.hpBG, obj.hpBar, obj.hpTxt, obj.boxFill}) do
+            d.Visible = false
+        end
+    end
+
+    -- Calculates 2D bounding box from cached 3D parts
+    -- Optimized by avoiding GetDescendants per frame
+    local function getBounds(parts)
+        local x0, y0, x1, y1 = math.huge, math.huge, -math.huge, -math.huge
+        local tz, n = 0, 0
+        
+        for _, p in ipairs(parts) do
+            if p and p.Parent then
+                local hx, hy, hz = p.Size.X / 2, p.Size.Y / 2, p.Size.Z / 2
+                local cf = p.CFrame
+                local corners = {
+                    Vector3.new(hx, hy, hz),  Vector3.new(-hx, hy, hz),
+                    Vector3.new(hx, -hy, hz), Vector3.new(-hx, -hy, hz),
+                    Vector3.new(hx, hy, -hz), Vector3.new(-hx, hy, -hz),
+                    Vector3.new(hx, -hy, -hz), Vector3.new(-hx, -hy, -hz),
+                }
+                
+                for _, o in ipairs(corners) do
+                    local sp = Cam:WorldToViewportPoint((cf * CFrame.new(o)).Position)
+                    if sp.Z > 0 then
+                        if sp.X < x0 then x0 = sp.X end
+                        if sp.Y < y0 then y0 = sp.Y end
+                        if sp.X > x1 then x1 = sp.X end
+                        if sp.Y > y1 then y1 = sp.Y end
+                        tz = tz + sp.Z
+                        n = n + 1
+                    end
+                end
+            end
+        end
+        
+        if n == 0 then return nil end
+        return x0, y0, x1, y1, tz / n
+    end
+
+
+
+    -- Safely converts 3D position to 2D screen space
+    local function sc(pos)
+        local sp = Cam:WorldToViewportPoint(pos)
+        if sp.Z > 0 then 
+            return Vector2.new(sp.X, sp.Y), sp.Z 
+        end
+        return nil
+    end
+
+    -- Draggable "Vonka.cc" label
+    local labelGui = Instance.new("ScreenGui")
+    labelGui.Name = "VonkaFOVLabel"
+    labelGui.ResetOnSpawn = false
+    labelGui.IgnoreGuiInset = true
+    labelGui.Parent = LP:WaitForChild("PlayerGui")
+
+    local labelFrame = Instance.new("Frame")
+    labelFrame.Size = UDim2.new(0, 80, 0, 20)
+    labelFrame.Position = UDim2.new(0.5, -40, 0.5, 0)
+    labelFrame.BackgroundTransparency = 1
+    labelFrame.Active = true
+    labelFrame.Parent = labelGui
+
+    local lblVonka = Instance.new("TextLabel")
+    lblVonka.Size = UDim2.new(0, 40, 1, 0)
+    lblVonka.BackgroundTransparency = 1
+    lblVonka.Text = "Vonka"
+    lblVonka.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lblVonka.Font = Enum.Font.GothamBold
+    lblVonka.TextSize = 14
+    lblVonka.TextXAlignment = Enum.TextXAlignment.Right
+    lblVonka.Parent = labelFrame
+
+    local lblCC = Instance.new("TextLabel")
+    lblCC.Size = UDim2.new(0, 40, 1, 0)
+    lblCC.Position = UDim2.new(0, 40, 0, 0)
+    lblCC.BackgroundTransparency = 1
+    lblCC.Text = ".cc"
+    lblCC.TextColor3 = Color3.fromRGB(255, 0, 0)
+    lblCC.Font = Enum.Font.GothamBold
+    lblCC.TextSize = 14
+    lblCC.TextXAlignment = Enum.TextXAlignment.Left
+    lblCC.Parent = labelFrame
+
+    do
+        local dragging, dragStart, startPos, dragConn = false, nil, nil, nil
+        labelFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = true; dragStart = input.Position; startPos = labelFrame.Position
+
+                if dragConn then
+                    dragConn:Disconnect()
+                end
+
+                dragConn = UIS.InputChanged:Connect(function(changedInput)
+                    if dragging and changedInput.UserInputType == Enum.UserInputType.MouseMovement then
+                        local delta = changedInput.Position - dragStart
+                        labelFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                    end
+                end)
+            end
+        end)
+        labelFrame.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = false
+                if dragConn then
+                    dragConn:Disconnect()
+                    dragConn = nil
+                end
+            end
+        end)
+    end
+
+    local hue = 0
+
+    RS.RenderStepped:Connect(function(dt)
+        Cam = workspace.CurrentCamera
+        if not Cam then return end
+        
+        local vp = Cam.ViewportSize
+        
+        local fovLabelOn = F("Visuals FOV Label") and true or false
+        labelGui.Enabled = fovLabelOn and true or false
+
+        -- ── PER-PLAYER ESP ───────────────────────────────────────────────────
+        -- Read master once per frame, skip all players if off
+        local master = F("Visuals Master") and true or false
+
+        -- Read shared flags once per frame (not per player) to optimize performance
+        local thick       = math.max(1, tonumber(F("Visuals Tracer Thickness")) or 1)
+        
+        local boxOn       = master and F("Visuals Box") and true or false
+        local boxC1       = F("Visuals Box Outline Color") or Color3.fromRGB(255, 255, 255)
+        
+        local filledOn    = master and F("Visuals Box Filled") and true or false
+        local filledColor = F("Visuals Box Filled Color")  or Color3.fromRGB(0, 80, 200)
+        
+        local chamsOn     = master and F("Visuals Chams") and true or false
+        local chamsColor  = F("Visuals Chams Color")       or Color3.fromRGB(0, 170, 255)
+        
+        local trOn        = master and F("Visuals Tracers") and true or false
+        local trColor     = F("Visuals Tracer Color")         or Color3.fromRGB(255, 255, 255)
+        local trOCol      = F("Visuals Tracer Outline Color") or Color3.fromRGB(0, 0, 0)
+        local origin      = tostring(F("Visuals Tracer Origin") or "Bottom")
+        
+        local nmOn        = master and F("Visuals Name") and true or false
+        local nmColor     = F("Visuals Name Color")         or Color3.fromRGB(200, 200, 200)
+        
+        local dnOn        = master and F("Visuals Display Name") and true or false
+        local dnColor     = F("Visuals Display Name Color") or Color3.fromRGB(255, 210, 0)
+        
+        local distOn      = master and F("Visuals Distance") and true or false
+        local distColor   = F("Visuals Distance Color")     or Color3.fromRGB(200, 200, 200)
+        
+        local toolOn      = master and F("Visuals Tool") and true or false
+        local toolColor   = F("Visuals Tool Color")         or Color3.fromRGB(255, 210, 0)
+        
+        local hpOn        = master and F("Visuals Health Bar") and true or false
+        local hpBGCol     = F("Visuals Health Bar BG Color") or Color3.fromRGB(255, 0, 0)
+        local hpCol       = F("Visuals Health Bar Color")    or Color3.fromRGB(0, 255, 0)
+        
+        local hpTxtOn     = master and F("Visuals Health Bar Text") and true or false
+        local hpTxtColor  = F("Visuals Health Bar Text Color") or Color3.fromRGB(200, 200, 200)
+
+        -- Tracer origin calculation (computed once per frame)
+        local from
+        if origin == "Top" then 
+            from = Vector2.new(vp.X / 2, 0)
+        elseif origin == "Middle" then 
+            from = Vector2.new(vp.X / 2, vp.Y / 2)
+        elseif origin == "Mouse" then 
+            from = Vector2.new(mouse.X, mouse.Y)
+        else 
+            from = Vector2.new(vp.X / 2, vp.Y) 
+        end
+
+        for player, obj in pairs(objs) do
+            if player ~= LP and not leaving[player] then
+                if obj then
+                    local ok, err = pcall(function()
+                        local char = player.Character
+                        if not char then hide(player); return end
+                        
+                        -- Cache still loading, skip silently
+                        if not obj.parts then return end 
+                        
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        if not hrp or not hum or hum.Health <= 0 then hide(player); return end
+
+                        local hrpSc, dist = sc(hrp.Position)
+                        if not hrpSc then hide(player); return end
+                        
+                        local head = char:FindFirstChild("Head")
+                        if not head then hide(player); return end
+
+                        -- True External ESP 2D Box Calculation
+                        local headPos = sc(head.Position + Vector3.new(0, 0.5, 0))
+                        local legPos = sc(hrp.Position - Vector3.new(0, 3, 0))
+                        
+                        if not headPos or not legPos then hide(player); return end
+
+                        local bH = math.abs(headPos.Y - legPos.Y)
+                        local bW = bH / 2
+                        
+                        local pad = 2
+                        local x0 = hrpSc.X - bW / 2 - pad
+                        local y0 = headPos.Y - pad
+                        local x1 = hrpSc.X + bW / 2 + pad
+                        local y1 = legPos.Y + pad
+                        
+                        bW = x1 - x0
+                        bH = y1 - y0
+
+                        -- Corner-style box (8 lines) matching classic ESP style
+                        local corner = math.max(6, math.floor(math.min(bW, bH) * 0.22))
+                        local corners = {
+                            {Vector2.new(x0, y0), Vector2.new(x0 + corner, y0)},
+                            {Vector2.new(x0, y0), Vector2.new(x0, y0 + corner)},
+                            {Vector2.new(x1, y0), Vector2.new(x1 - corner, y0)},
+                            {Vector2.new(x1, y0), Vector2.new(x1, y0 + corner)},
+                            {Vector2.new(x0, y1), Vector2.new(x0 + corner, y1)},
+                            {Vector2.new(x0, y1), Vector2.new(x0, y1 - corner)},
+                            {Vector2.new(x1, y1), Vector2.new(x1 - corner, y1)},
+                            {Vector2.new(x1, y1), Vector2.new(x1, y1 - corner)},
+                        }
+
+                        for i = 1, 8 do
+                            local ln = obj.boxL[i]
+                            ln.Visible   = boxOn and true or false
+                            ln.From      = corners[i][1]
+                            ln.To        = corners[i][2]
+                            ln.Color     = Color3.fromRGB(255, 255, 255)
+                            ln.Thickness = 1
+
+                            local lo = obj.boxO[i]
+                            lo.Visible   = boxOn and true or false
+                            lo.From      = corners[i][1]
+                            lo.To        = corners[i][2]
+                            lo.Color     = Color3.fromRGB(0, 0, 0)
+                            lo.Thickness = 3
+                        end
+
+                        -- BOX FILLED
+                        obj.boxFill.Visible = filledOn and true or false
+                        obj.boxFill.Position = Vector2.new(x0, y0)
+                        obj.boxFill.Size = Vector2.new(bW, bH)
+                        obj.boxFill.Color = filledColor
+                        obj.boxFill.Filled = true
+                        obj.boxFill.Transparency = 0.55
+
+                        -- CHAMS: Only update parts when state/color changes to save performance
+                        if obj.chamsApplied ~= chamsOn or (chamsOn and obj.chamsColor ~= chamsColor) then
+                            obj.chamsApplied = chamsOn
+                            obj.chamsColor   = chamsColor
+                            for _, p in ipairs(obj.parts) do
+                                if p and p.Parent then
+                                    p.Material = chamsOn and Enum.Material.Neon or Enum.Material.SmoothPlastic
+                                    if chamsOn then p.Color = chamsColor end
+                                end
+                            end
+                        end
+
+                        -- TRACER
+                        obj.trOut.Visible = trOn and true or false
+                        obj.trOut.From = from; obj.trOut.To = hrpSc; obj.trOut.Color = trOCol; obj.trOut.Thickness = thick + 2
+                        
+                        obj.tr.Visible = trOn and true or false
+                        obj.tr.From = from; obj.tr.To = hrpSc; obj.tr.Color = trColor; obj.tr.Thickness = thick
+
+                        -- NAME
+                        obj.nm.Visible = nmOn and true or false
+                        obj.nm.Position = Vector2.new(x0 + bW / 2, y0 - 11)
+                        obj.nm.Text = tostring(player.Name)
+                        obj.nm.Color = Color3.fromRGB(255, 255, 255)
+                        obj.nm.Size = 12
+
+                        -- DISPLAY NAME (disabled in compact style)
+                        obj.dn.Visible = false
+
+                        -- DISTANCE
+                        obj.dist.Visible = distOn and true or false
+                        obj.dist.Position = Vector2.new(x0 + bW / 2, y1 + 2)
+                        obj.dist.Text = "[" .. tostring(math.floor(dist)) .. "m]"
+                        obj.dist.Color = Color3.fromRGB(255, 255, 255)
+                        obj.dist.Size = 11
+
+                        -- TOOL (uses event-cached toolName, no GetChildren per frame)
+                        obj.tool.Visible = (toolOn and obj.toolName ~= "") and true or false
+                        obj.tool.Position = Vector2.new(x0 + bW / 2, y1 + (distOn and 14 or 2))
+                        obj.tool.Text = "[" .. tostring(obj.toolName) .. "]"
+                        obj.tool.Color = Color3.fromRGB(230, 230, 230)
+                        obj.tool.Size = 11
+
+                        -- HEALTH BAR
+                        local hpPct = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
+                        local bW2 = 2
+                        local hpX = x0 - bW2 - 4
+                        local hpColor = Color3.fromRGB(
+                            math.floor(255 * (1 - hpPct)),
+                            math.floor(255 * hpPct),
+                            0
+                        )
+                        
+                        obj.hpBG.Visible = hpOn and true or false
+                        obj.hpBG.Position = Vector2.new(hpX, y0)
+                        obj.hpBG.Size = Vector2.new(bW2, bH)
+                        obj.hpBG.Color = Color3.fromRGB(25, 25, 25)
+                        
+                        obj.hpBar.Visible = hpOn and true or false
+                        obj.hpBar.Position = Vector2.new(hpX, y0 + bH * (1 - hpPct))
+                        obj.hpBar.Size = Vector2.new(bW2, bH * hpPct)
+                        obj.hpBar.Color = hpColor
+
+                        -- HEALTH BAR TEXT
+                        obj.hpTxt.Visible = (hpOn and hpTxtOn) and true or false
+                        obj.hpTxt.Position = Vector2.new(hpX - 2, y0 + bH / 2 - 6)
+                        obj.hpTxt.Text = tostring(math.floor(hum.Health))
+                        obj.hpTxt.Color = hpTxtColor
+                        obj.hpTxt.Size = 11
+                    end)
+                    
+                    if not ok then 
+                        warn("ESP Loop Error for " .. tostring(player.Name) .. ": " .. tostring(err))
+                        hide(player) 
+                    end
+                end
+            end
+        end
+    end)
+
+    -- Cleanup hook for unload
+    -- BEAM TRACER system
+    do
+        local beams = {} -- active beam drawings {lines=[], born=tick()}
+        local function isBeamVectorValid(v)
+            if typeof(v) ~= "Vector3" then return false end
+            return v.X == v.X and v.Y == v.Y and v.Z == v.Z
+                and v.X ~= math.huge and v.X ~= -math.huge
+                and v.Y ~= math.huge and v.Y ~= -math.huge
+                and v.Z ~= math.huge and v.Z ~= -math.huge
+        end
+        local function spawnBeam(from3d, to3d)
+            if not F("Visuals Beam") then return end
+            if not isBeamVectorValid(from3d) or not isBeamVectorValid(to3d) then return end
+            local segs   = math.floor(F("Visuals Beam Segments") or 8)
+            local dur    = F("Visuals Beam Duration") or 1
+            local width  = F("Visuals Beam Width") or 0.5
+            local c1     = F("Visuals Beam Color")  or Color3.fromRGB(0,170,255)
+            local c2     = F("Visuals Beam Color2") or Color3.fromRGB(255,0,255)
+            if segs < 1 then segs = 1 end
+            local lines  = {}
+            for i = 1, segs do
+                local ln = makeDrawing("Line")
+                ln.Visible   = false
+                ln.Thickness = width
+                ln.Color     = c1:Lerp(c2, segs == 1 and 0 or ((i - 1) / (segs - 1)))
+                ln.From      = Vector2.new(0, 0)
+                ln.To        = Vector2.new(0, 0)
+                ln.Transparency = 1
+                lines[i]     = ln
+            end
+            beams[#beams+1] = {lines=lines, from=from3d, to=to3d, born=tick(), dur=dur}
+        end
+
+        -- hook bullet/projectile hits via RemoteEvent detection
+        local RS2 = game:GetService("RunService")
+        RS2.Heartbeat:Connect(function()
+            local now = tick()
+            local i = 1
+            while i <= #beams do
+                local b = beams[i]
+                local age = now - b.born
+                if age >= b.dur then
+                    for _, ln in ipairs(b.lines) do ln:Remove() end
+                    table.remove(beams, i)
+                else
+                    -- Optimized without Tween/Lerp calls
+                    if typeof(b.from) ~= "Vector3" or typeof(b.to) ~= "Vector3" then
+                        for _, ln in ipairs(b.lines) do pcall(function() ln:Remove() end) end
+                        table.remove(beams, i)
+                        continue
+                    end
+                    local fromSc = Cam:WorldToViewportPoint(b.from)
+                    local toSc   = Cam:WorldToViewportPoint(b.to)
+                    if fromSc.Z > 0 and toSc.Z > 0 then
+                        local f2 = Vector2.new(fromSc.X, fromSc.Y)
+                        local t2 = Vector2.new(toSc.X,   toSc.Y)
+                        local alpha = 1 - (age / b.dur)
+                        
+                        for j = 1, #b.lines do
+                            local t0 = (j-1)/#b.lines
+                            local t1 = j/#b.lines
+                            local p0 = f2 + (t2 - f2) * t0
+                            local p1 = f2 + (t2 - f2) * t1
+                            local ln = b.lines[j]
+                            pcall(function()
+                                ln.From = p0
+                                ln.To = p1
+                                ln.Transparency = alpha
+                                ln.Visible = true
+                            end)
+                        end
+                    else
+                        for _, ln in ipairs(b.lines) do
+                            pcall(function() ln.Visible = false end)
+                        end
+                    end
+                    i = i + 1
+                end
+            end
+        end)
+
+        _G.VonkaBeamSpawn = spawnBeam
+    end
+
+    _G.VonkaESPCleanup = function()
+        for p in pairs(objs) do rm(p) end
+        fovOut:Remove(); fovIn:Remove(); fovFill:Remove()
+        fovSqOut:Remove(); fovSqIn:Remove()
+        for _,l in ipairs(fovTriOut) do l:Remove() end; for _,l in ipairs(fovTriIn)  do l:Remove() end
+        for _,l in ipairs(fovDiaOut) do l:Remove() end; for _,l in ipairs(fovDiaIn)  do l:Remove() end
+        for _,l in ipairs(fovCrsOut) do l:Remove() end; for _,l in ipairs(fovCrsIn)  do l:Remove() end
+        labelGui:Destroy()
+    end
+    
+    for _, p in ipairs(Players:GetPlayers()) do if p ~= LP then mk(p) end end
+    Players.PlayerAdded:Connect(function(p) if p ~= LP then mk(p) end end)
+    Players.PlayerRemoving:Connect(function(p)
+        leaving[p] = true
+        rm(p)
+    end)
+
+    -- Hit Sound Logic
+    local SoundService = game:GetService("SoundService")
+    local hitsounds = { 
+        ["RIFK7"] = "rbxassetid://9102080552", 
+        ["Bubble"] = "rbxassetid://9102092728", 
+        ["Minecraft"] = "rbxassetid://5869422451", 
+        ["Cod"] = "rbxassetid://160432334", 
+        ["Bameware"] = "rbxassetid://6565367558", 
+        ["Neverlose"] = "rbxassetid://6565370984", 
+        ["Gamesense"] = "rbxassetid://4817809188", 
+        ["Rust"] = "rbxassetid://6565371338" 
+    }
+    local HIT_GUN_TOOL_NAMES = {
+        "[Revolver]", "[DoubleBarrel]", "[Double Barrel]", "[Shotgun]",
+        "[Silencer]", "[TacticalShotgun]", "[Tactical Shotgun]", "[SMG]"
+    }
+    local HIT_GUN_KEYWORDS = {
+        "shotgun", "revolver", "smg", "silencer", "doublebarrel", "double", "rifle"
+    }
+    local lastLocalShot = 0
+    local shotWindow = 0.35
+
+    local function isHoldingGun()
+        local char = LP.Character
+        if not char then return false end
+        local tool = char:FindFirstChildOfClass("Tool")
+        if not tool then return false end
+        local rawName = tostring(tool.Name or "")
+        local lowerName = string.lower(rawName)
+        local compactName = lowerName:gsub("[%[%]%s%p_%-]", "")
+
+        for _, name in ipairs(HIT_GUN_TOOL_NAMES) do
+            if rawName == name then
+                return true
+            end
+        end
+
+        if tool:FindFirstChild("Ammo") or tool:FindFirstChild("GunScript") or tool:FindFirstChild("LocalScript") then
+            return true
+        end
+
+        for _, kw in ipairs(HIT_GUN_KEYWORDS) do
+            if lowerName:find(kw, 1, true) or compactName:find(kw, 1, true) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    UIS.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isHoldingGun() then
+            lastLocalShot = tick()
+            _G.VonkaLastLocalShot = lastLocalShot
+        end
+    end)
+
+    local function playHitSound()
+        if not F("Visuals Hit Sound") then return end
+        local sType = F("Visuals Hit Sound Type") or "RIFK7"
+        local sId = hitsounds[sType]
+        if sId then
+            local sound = Instance.new("Sound")
+            sound.SoundId = sId
+            sound.Volume = F("Visuals Hit Sound Volume") or 0.5
+            sound.Name = "\0"
+            sound.PlayOnRemove = true
+            sound.Parent = SoundService
+            sound:Destroy()
+        end
+    end
+
+    local function trackHealth(char)
+        local hum = char:WaitForChild("Humanoid", 5)
+        if hum then
+            local lastHealth = hum.Health
+            local lastSoundTick = 0
+            hum.HealthChanged:Connect(function(newHealth)
+                if newHealth < lastHealth then
+                    local now = tick()
+                    local shotTick = math.max(lastLocalShot, _G.VonkaLastLocalShot or 0)
+                    if (now - shotTick) <= shotWindow and (now - lastSoundTick) >= 0.045 then
+                        lastSoundTick = now
+                        playHitSound()
+                    end
+                end
+                lastHealth = newHealth
+            end)
+        end
+    end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LP then
+            if p.Character then trackHealth(p.Character) end
+            p.CharacterAdded:Connect(trackHealth)
+        end
+    end
+    Players.PlayerAdded:Connect(function(p)
+        if p ~= LP then
+            p.CharacterAdded:Connect(trackHealth)
+        end
+    end)
+end
+
+do -- Automation Logic (Auto Capsule)
+    local HttpService = game:GetService("HttpService")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local LP = game:GetService("Players").LocalPlayer
+
+    -- Auto Buy Keys Task
+    task.spawn(function()
+        while true do
+            local delayTime = F("Buy Keys Cooldown") or 1
+            if active("Auto Buy Keys", "Buy Keys Key") then
+                local mainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
+                if mainEvent then
+                    pcall(function() mainEvent:FireServer("BuyCapsuleKey") end)
+                end
+            end
+            task.wait(delayTime)
+        end
+    end)
+
+    -- Auto Open Capsules Task
+    task.spawn(function()
+        while true do
+            local delayTime = F("Open Capsules Cooldown") or 3
+            if active("Auto Open Capsules", "Open Capsules Key") then
+                local ok, items = pcall(function() 
+                    return HttpService:JSONDecode(LP.DataFolder.InventoryData.Items.Value) 
+                end) 
+                
+                if ok and items then 
+                    for id, item in pairs(items) do 
+                        if not active("Auto Open Capsules", "Open Capsules Key") then break end 
+                        if item.ItemType == "LootCapsule" then 
+                            _G.SELECTED_CAPSULE_OPENING_ITEM_ID = id 
+                            local mainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
+                            if mainEvent then
+                                pcall(function() mainEvent:FireServer("OpenCapsule", id) end)
+                            end
+                            task.wait(delayTime) 
+                        end 
+                    end 
+                end 
+            end
+            task.wait(0.5) -- Fast check loop, then uses cooldown when opening
+        end
+    end)
+    
+    -- Ping Spoofer Task
+    task.spawn(function()
+        while true do
+            local delayTime = F("Ping Spoofer Speed") or 0.1
+            if F("Auto Ping Spoofer") then
+                local mainEvent = ReplicatedStorage:FindFirstChild("MainEvent")
+                if mainEvent then
+                    pcall(function() mainEvent:FireServer("GetPing") end)
+                end
+            end
+            task.wait(delayTime)
+        end
+    end)
+end
