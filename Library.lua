@@ -254,6 +254,31 @@ local Library do
     Library.Sections.__index = Library.Sections
     Library.Pages.__index = Library.Pages
 
+    -- Defined early because tooltips bind before the helper section below.
+    function Library:Connect(Event, Callback, Name)
+        Name = Name or StringFormat("Connection_%s_%s", self.UnnamedConnections + 1, HttpService:GenerateGUID(false))
+        self.UnnamedConnections += 1
+
+        local NewConnection = {
+            Event = Event,
+            Callback = Callback,
+            Name = Name,
+            Connection = Event:Connect(Callback)
+        }
+
+        TableInsert(self.Connections, NewConnection)
+        return NewConnection
+    end
+
+    function Library:Disconnect(Name)
+        for _, Connection in self.Connections do
+            if Connection.Name == Name then
+                Connection.Connection:Disconnect()
+                break
+            end
+        end
+    end
+
     local Keys = {
         ["Unknown"]           = "Unknown",
         ["Backspace"]         = "Back",
@@ -348,7 +373,11 @@ local Library do
         Tween.__index = Tween
 
         Tween.Create = function(self, Item, Info, Goal, IsRawItem)
-            Item = IsRawItem and Item or Item.Instance
+            if not IsRawItem then
+                if typeof(Item) ~= "Instance" then
+                    Item = Item.Instance
+                end
+            end
 
             -- Direct property set (no TweenService overhead)
             for Property, Value in Goal do
@@ -667,6 +696,29 @@ local Library do
         Library.Font = CustomFont:Get("Windows-XP-Tahoma")
     end
 
+    -- Needed early (tooltips are initialized before the main helpers below).
+    if not Library.AddToTheme then
+        Library.AddToTheme = function(self, Item, Properties)
+            if typeof(Item) ~= "Instance" then
+                Item = Item.Instance
+            end
+
+            local ThemeData = {
+                Item = Item,
+                Properties = Properties,
+            }
+
+            for Property, Value in ThemeData.Properties do
+                if type(Value) == "string" then
+                    Item[Property] = self.Theme[Value]
+                end
+            end
+
+            TableInsert(self.ThemeItems, ThemeData)
+            self.ThemeMap[Item] = ThemeData
+        end
+    end
+
     Library.Holder = Instances:Create("ScreenGui", {
         Parent = gethui(),
         Name = "\0",
@@ -963,7 +1015,9 @@ local Library do
     end
 
     Library.AddToTheme = function(self, Item, Properties)
-        Item = Item.Instance or Item 
+        if typeof(Item) ~= "Instance" then
+            Item = Item.Instance
+        end
 
         local ThemeData = {
             Item = Item,
@@ -1176,7 +1230,9 @@ local Library do
     end
 
     Library.ChangeItemTheme = function(self, Item, Properties)
-        Item = Item.Instance or Item
+        if typeof(Item) ~= "Instance" then
+            Item = Item.Instance
+        end
 
         if not self.ThemeMap[Item] then 
             return
@@ -1199,7 +1255,9 @@ local Library do
     end
 
     Library.IsMouseOverFrame = function(self, Frame)
-        Frame = Frame.Instance
+        if typeof(Frame) ~= "Instance" then
+            Frame = Frame.Instance
+        end
 
         local MousePosition = Vector2New(Mouse.X, Mouse.Y)
 
@@ -1243,7 +1301,10 @@ local Library do
         end
 
         for _, Column in Columns do
-            local ColumnInstance = Column.Instance or Column
+            local ColumnInstance = Column
+            if typeof(ColumnInstance) ~= "Instance" then
+                ColumnInstance = ColumnInstance.Instance
+            end
             for _, Child in ColumnInstance:GetChildren() do
                 if Child:IsA("Frame") then
                     if Query == "" then
