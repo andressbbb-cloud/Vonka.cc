@@ -799,10 +799,11 @@ local Library do
             TextSize = 12,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Top,
-            TextWrapped = true,
+            TextWrapped = false,
             TextColor3 = FromRGB(215, 215, 215),
             Text = "",
-            ZIndex = 999
+            ZIndex = 999,
+            Size = UDim2New(0, 300, 0, 0)
         })
         Library:AddToTheme(Items["Text"].Instance, {TextColor3 = "Text"})
 
