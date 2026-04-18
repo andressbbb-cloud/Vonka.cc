@@ -4102,7 +4102,9 @@ local Library do
                 TextTransparency = 0.48,
                 Text = Toggle.Name,
                 Name = "\0",
-                Size = UDim2New(1, -14, 1, 0),
+                -- Reserve extra space on the right so the tooltip icon
+                -- never overlaps keybind / right-side controls.
+                Size = UDim2New(1, -34, 1, 0),
                 Position = UDim2New(0, 18, 0, -1),
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
