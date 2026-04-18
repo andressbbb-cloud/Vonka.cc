@@ -4111,7 +4111,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Toggle"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Toggle"].Instance, TooltipText)
             end
             
             Instances:Create("UIStroke", {
@@ -4294,7 +4294,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Button"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Button"].Instance, TooltipText)
             end
             
             Items["TextBorder"] = Instances:Create("UIStroke", {
@@ -4397,7 +4397,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Slider"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Slider"].Instance, TooltipText)
             end
             
             Instances:Create("UIStroke", {
@@ -4623,7 +4623,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Dropdown"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Dropdown"].Instance, TooltipText)
             end
 
             Instances:Create("UIStroke", {
@@ -5052,7 +5052,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Label"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Label"].Instance, TooltipText)
             end
 
             Instances:Create("UIStroke", {
@@ -5161,7 +5161,7 @@ local Library do
             })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
             if type(TooltipText) == "string" and TooltipText ~= "" then
-                self:AddTooltipIcon(Items["Textbox"].Instance, TooltipText)
+                Library:AddTooltipIcon(Items["Textbox"].Instance, TooltipText)
             end
             
             Instances:Create("UIStroke", {
