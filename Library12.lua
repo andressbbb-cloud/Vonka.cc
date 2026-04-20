@@ -799,10 +799,11 @@ local Library do
             TextSize = 12,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextYAlignment = Enum.TextYAlignment.Top,
-            TextWrapped = true,
+            TextWrapped = false,
             TextColor3 = FromRGB(215, 215, 215),
             Text = "",
-            ZIndex = 999
+            ZIndex = 999,
+            Size = UDim2New(0, 300, 0, 0)
         })
         Library:AddToTheme(Items["Text"].Instance, {TextColor3 = "Text"})
 
@@ -4053,7 +4054,7 @@ local Library do
             Count = 0
         }
 
-        local TooltipText = Library:GetTooltip(Data) or Toggle.Name
+        local TooltipText = Library:GetTooltip(Data)
 
         local Items = { } do 
             Items["Toggle"] = Instances:Create("TextButton", {
@@ -4070,7 +4071,7 @@ local Library do
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Toggle"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["Indicator"] = Instances:Create("Frame", {
                 Parent = Items["Toggle"].Instance,
@@ -4102,7 +4103,9 @@ local Library do
                 TextTransparency = 0.48,
                 Text = Toggle.Name,
                 Name = "\0",
-                Size = UDim2New(1, -14, 1, 0),
+                -- Reserve extra space on the right so the tooltip icon
+                -- never overlaps keybind / right-side controls.
+                Size = UDim2New(1, -34, 1, 0),
                 Position = UDim2New(0, 18, 0, -1),
                 BackgroundTransparency = 1,
                 TextXAlignment = Enum.TextXAlignment.Left,
@@ -4262,8 +4265,7 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Button"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
-
-            Library:BindTooltip(Items["Button"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
 
             Instances:Create("UIGradient", {
                 Parent = Items["Button"].Instance,
@@ -4380,7 +4382,7 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Slider"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Slider"].Instance,
@@ -4419,8 +4421,7 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
-
-            Library:BindTooltip(Items["RealSlider"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealSlider"].Instance,
@@ -4605,7 +4606,7 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Dropdown"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Dropdown"].Instance,
@@ -4642,8 +4643,7 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["RealDropdown"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
-
-            Library:BindTooltip(Items["RealDropdown"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Instances:Create("UIGradient", {
                 Parent = Items["RealDropdown"].Instance,
@@ -5033,7 +5033,7 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Label"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Label"].Instance,
@@ -5141,7 +5141,7 @@ local Library do
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Textbox"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["Text"] = Instances:Create("TextLabel", {
                 Parent = Items["Textbox"].Instance,
@@ -5178,8 +5178,7 @@ local Library do
                 BorderSizePixel = 2,
                 BackgroundColor3 = FromRGB(33, 33, 36)
             })  Items["Background"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
-
-            Library:BindTooltip(Items["Background"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Instances:Create("UIGradient", {
                 Parent = Items["Background"].Instance,
@@ -5314,7 +5313,7 @@ local Library do
                 AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
-            Library:BindTooltip(Items["Listbox"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Items["RealListbox"] = Instances:Create("ScrollingFrame", {
                 Parent = Items["Listbox"].Instance,
@@ -5331,8 +5330,7 @@ local Library do
                 BorderSizePixel = 2,
                 CanvasSize = UDim2New(0, 0, 0, 0)
             })  Items["RealListbox"]:AddToTheme({ScrollBarImageColor3 = "Accent", BackgroundColor3 = "Background", BorderColor3 = "Border"})
-
-            Library:BindTooltip(Items["RealListbox"].Instance, TooltipText)
+            -- Tooltips are shown via the "?" icon only.
             
             Instances:Create("UIStroke", {
                 Parent = Items["RealListbox"].Instance,
